@@ -2,7 +2,7 @@ import pygame
 from oop_maybe import Person, Log
 
 
-if __name__ == '__main__':
+def level(pers_x, pers_y, logs=[], enemies=[]):
     pygame.init()
     pygame.display.set_caption('Level')
     size = width, height = 600, 600
@@ -11,9 +11,7 @@ if __name__ == '__main__':
     clock = pygame.time.Clock()
     fps = 500
     running = True
-    pers = Person(300, 250)
-    # дальше мы одно бревно заменяем уже на список бревен из класса уровня
-    log = Log((100, 300, 400, 5))
+    pers = Person(pers_x, pers_y)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -42,17 +40,25 @@ if __name__ == '__main__':
                 # s up
                 if event.key == 115:
                     pers.g -= 100
-        if log.log_in(pers):
-            pers.on_log = True
-            pers.jump_v = 0
-            pers.y = log.y_u - pers.height
-        else:
-            pers.on_log = False
+        for i in logs:
+            if i.log_in(pers):
+                pers.on_log = True
+                pers.jump_v = 0
+                pers.y = i.y_u - pers.height
+                break
+            else:
+                pers.on_log = False
         time = clock.tick(fps)
         pers.run(time)
         pers.fly(time)
-        pygame.draw.rect(screen, '#ff0000', (int(pers.x), int(pers.y), pers.width, pers.height))
-        pygame.draw.rect(screen, log.color, (log.x_l, log.y_u, log.width, log.height))
+        pers.draw(screen)
+        for i in logs:
+            i.draw(screen)
+        for i in enemies:
+            i.draw(screen)
         pygame.display.flip()
         screen.fill((0, 0, 0))
     pygame.quit()
+
+
+level(300, 250, [Log((100, 300, 400, 5)), Log((50, 400, 400, 5))])

@@ -1,3 +1,6 @@
+import pygame
+
+
 class Person:
     def __init__(self, x, y):
         self.rv = 100
@@ -33,6 +36,9 @@ class Person:
             self.y += self.jump_v * time / 1000
             self.jump_v += self.g * time / 1000
 
+    def draw(self, screen):
+        pygame.draw.rect(screen, '#ff0000', (int(self.x), int(self.y), self.width, self.height))
+
 
 class Log:
     def __init__(self, rect, color='#646423'):
@@ -47,6 +53,9 @@ class Log:
                 (self.x_l < pers.x + pers.width and self.x_l + self.width > pers.x)):
             return True
         return False
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, (self.x_l, self.y_u, self.width, self.height))
 
 
 class Level:
