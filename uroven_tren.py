@@ -56,6 +56,14 @@ class Level:
                     break
                 else:
                     self.pers.on_log = False
+                if i.log_knock(self.pers) == 'r':
+                    self.pers.right_log = True
+                elif i.log_knock(self.pers) == 'l':
+                    self.pers.left_log = True
+                else:
+                    self.pers.left_log = self.pers.right_log = False
+                if i.log_knock(self.pers) == 'u':
+                    self.pers.jump_v = 0
             time = self.clock.tick(self.fps)
             self.pers.run(time)
             self.pers.fly(time)
@@ -72,5 +80,5 @@ class Level:
         self.running = False
 
 
-x = Level(300, 250, [Log((100, 300, 400, 5)), Log((50, 400, 400, 5))])
+x = Level(50, 120, [Log((50, 170, 400, 5)), Log((100, 130, 400, 50)), Log((150, 100, 400, 5))])
 x.run()

@@ -14,12 +14,13 @@ class Person:
         self.on_log = True
         self.left_run = False
         self.right_ran = False
+        self.left_log = False
+        self.right_log = False
 
-    # left_right = speed x
     def run(self, time):
-        if self.left_run and not self.right_ran:
+        if self.left_run and not self.right_ran and not self.left_log:
             speed = self.lv
-        elif not self.left_run and self.right_ran:
+        elif not self.left_run and self.right_ran and not self.right_log:
             speed = self.rv
         else:
             speed = 0
@@ -54,22 +55,19 @@ class Log:
             return True
         return False
 
+    # проверка на столкновение с доской. Возвращает 'r', 'l', 'u'.
+    def log_knock(self, pers):
+        if (0 <= self.x_l - pers.x - pers.width < 2) and True:
+            return 'r'
+        return -1
+
     def draw(self, screen):
         pygame.draw.rect(screen, self.color, (self.x_l, self.y_u, self.width, self.height))
 
 
-class Level:
-    def __init__(self, logs_array):
-        self.logs_array = logs_array
-
-    def check_logs(self, x, y):
-        for i in self.logs_array:
-            pass
-
-
 class Hero(Person):
-    def __init__(self, x, y, g, weapon, armor, heal, ko_heal=1):
-        super().__init__(x, y, g)
+    def __init__(self, x, y, weapon, armor, heal, ko_heal=1):
+        super().__init__(x, y)
         self.weapon = weapon
         self.armor = armor
         self.heal = heal
