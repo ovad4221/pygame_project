@@ -6,12 +6,12 @@ class Person:
     def __init__(self, x, y):
         self.rv = (1 / 6) * WIDTH
         self.lv = -1 * self.rv
-        self.width = int(35 * (WIDTH / 600))
-        self.height = int(50 * (HEIGHT / 600))
+        self.width = int(40 * (WIDTH / 1366))
+        self.height = int(60 * (HEIGHT / 768))
         self.x = x
         self.y = y
         self.jump_v = 0
-        self.g = int(55 * (HEIGHT / 600))
+        self.g = int(60 * (HEIGHT / 600))
         self.on_log = True
         self.left_run = False
         self.right_ran = False
@@ -38,8 +38,8 @@ class Person:
             self.y += self.jump_v * time / 1000
             self.jump_v += self.g * time / 1000
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, '#ff0000', (int(self.x), int(self.y), self.width, self.height))
+    def draw(self, screen, alp):
+        pygame.draw.rect(screen, '#ff0000', (int(self.x - alp), int(self.y), self.width, self.height))
 
 
 class Log:
@@ -56,14 +56,15 @@ class Log:
             return True
         return False
 
-    # проверка на столкновение с доской. Возвращает 'r', 'l', 'u'.
+    # проверка на столкновение с доской. Возвращает 'r', 'l', 'u' ну или -1.
+    # показывает с какой стороны бревно
     def log_knock(self, pers):
-        if (0 <= self.x_l - pers.x - pers.width < 2) and True:
+        if (0 <= self.x_l - pers.x - pers.width < 2 * int(HEIGHT / 600)) and True:
             return 'r'
         return -1
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x_l, self.y_u, self.width, self.height))
+    def draw(self, screen, alp):
+        pygame.draw.rect(screen, self.color, (int(self.x_l - alp), self.y_u, self.width, self.height))
 
 
 class Hero(Person):

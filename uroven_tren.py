@@ -4,14 +4,17 @@ from constans import WIDTH, HEIGHT, FPS
 
 
 class Level:
-    def __init__(self, pers_x, pers_y, logs=[], enemies=[]):
+    def __init__(self, pers_x, pers_y, end_of_level, logs=[], enemies=[], do_center=True):
         pygame.init()
         pygame.display.set_caption('Level')
         size = WIDTH, HEIGHT
+        self.end_of_level = end_of_level
+        self.do_center = do_center
         self.screen = pygame.display.set_mode(size)
         self.screen.fill((0, 0, 0))
         self.clock = pygame.time.Clock()
         self.running = True
+        self.alp = 0
         self.pers = Person(pers_x, pers_y)
         self.logs = logs
         self.enemies = enemies
@@ -33,7 +36,7 @@ class Level:
                         self.pers.jump()
                     # s down
                     if event.key == 115:
-                        self.pers.g += 100 * int(HEIGHT / 600)
+                        self.pers.g += 1000 * int(HEIGHT / 600)
                     # esc - остановка уровня
                     if event.key == 27:
                         self.stop_run()
@@ -47,7 +50,7 @@ class Level:
                         self.pers.left_run = False
                     # s up
                     if event.key == 115:
-                        self.pers.g -= 100 * int(HEIGHT / 600)
+                        self.pers.g -= 1000 * int(HEIGHT / 600)
             for i in self.logs:
                 if i.log_in(self.pers):
                     self.pers.on_log = True
@@ -56,25 +59,37 @@ class Level:
                     break
                 else:
                     self.pers.on_log = False
-                if i.log_knock(self.pers) == 'r':
+                # предпологаемая физика бревен
+                '''if i.log_knock(self.pers) == 'r':
                     self.pers.right_log = True
                 elif i.log_knock(self.pers) == 'l':
                     self.pers.left_log = True
                 else:
                     self.pers.left_log = self.pers.right_log = False
                 if i.log_knock(self.pers) == 'u':
-                    self.pers.jump_v = 0
+                    self.pers.jump_v = 0'''
             self.screen.fill((0, 0, 0))
             time = self.clock.tick(FPS)
             self.pers.run(time)
             self.pers.fly(time)
-            self.pers.draw(self.screen)
-            for i in self.logs:
-                i.draw(self.screen)
-            for i in self.enemies:
-                i.draw(self.screen)
+            self.drawing()
             pygame.display.flip()
         pygame.quit()
+
+    def drawing(self):
+        if self.do_center:
+            alp = self.pers.x - WIDTH // 2
+            if alp <= 0:
+                alp = 0
+            elif self.end_of_level - self.pers.x <= WIDTH // 2:
+                alp = self.end_of_level - WIDTH
+        else:
+            alp = 0
+        self.pers.draw(self.screen, alp)
+        for i in self.logs:
+            i.draw(self.screen, alp)
+        for i in self.enemies:
+            i.draw(self.screen)
 
     def stop_run(self):
         font1 = pygame.font.Font(None, 50 * int(HEIGHT * WIDTH / (1366 * 768)))
@@ -109,5 +124,9 @@ class Level:
             self.running = False
 
 
-x = Level(0, 0, [Log((50, 500, 400, 5)), Log((400, 460, 400, 5)), Log((1000, 430, 300, 5))])
+x = Level(0, 400, 3700, [Log((0, 500, 400, 5)), Log((400, 460, 400, 5)), Log((1000, 430, 300, 5)),
+                         Log((1400, 400, 300, 5)), Log((2000, 400, 300, 5)),
+                         Log((2400, 400, 300, 5)), Log((3000, 350, 300, 5)),
+                         Log((3000, 250, 300, 5)), Log((3000, 400, 300, 5)),
+                         Log((3400, 200, 300, 5)), Log((3000, 300, 300, 5))])
 x.run()
