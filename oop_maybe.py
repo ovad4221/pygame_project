@@ -1,16 +1,17 @@
 import pygame
+from constans import WIDTH, HEIGHT
 
 
 class Person:
     def __init__(self, x, y):
-        self.rv = 100
-        self.lv = -100
-        self.width = 35
-        self.height = 50
+        self.rv = (1 / 6) * WIDTH
+        self.lv = -1 * self.rv
+        self.width = int(35 * (WIDTH / 600))
+        self.height = int(50 * (HEIGHT / 600))
         self.x = x
         self.y = y
         self.jump_v = 0
-        self.g = 55
+        self.g = int(55 * (HEIGHT / 600))
         self.on_log = True
         self.left_run = False
         self.right_ran = False
@@ -28,8 +29,8 @@ class Person:
 
     def jump(self):
         if self.on_log:
-            self.jump_v = -75
-            self.y -= 3
+            self.jump_v = -75 * (HEIGHT / 600)
+            self.y -= 2 * (HEIGHT / 600)
             self.on_log = False
 
     def fly(self, time):
@@ -50,7 +51,7 @@ class Log:
         self.color = color
 
     def log_in(self, pers):
-        if (0 <= self.y_u - pers.y - pers.height < 2 and
+        if (0 <= self.y_u - pers.y - pers.height < int(2 * (HEIGHT / 600)) and
                 (self.x_l < pers.x + pers.width and self.x_l + self.width > pers.x)):
             return True
         return False
