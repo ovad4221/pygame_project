@@ -1,6 +1,6 @@
 import pygame
-from oop_maybe import Person, Log
-from constans import WIDTH, HEIGHT, FPS
+from oop_maybe import Person, Log, Camera
+from constans import *
 
 
 class Level:
@@ -18,78 +18,63 @@ class Level:
         self.pers = Person(pers_x, pers_y)
         self.logs = logs
         self.enemies = enemies
+        self.camera = Camera()
 
     def run(self):
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.stop_run()
+                    self.stop_drun()
                 if event.type == pygame.KEYDOWN:
                     # d down
-                    if event.key == 100:
+                    if event.key == pygame.K_d:
                         self.pers.right_ran = True
                     # a down
-                    elif event.key == 97:
+                    elif event.key == pygame.K_a:
                         self.pers.left_run = True
                     # w down
-                    if event.key == 119:
+                    if event.key == pygame.K_SPACE:
                         self.pers.jump()
                     # s down
-                    if event.key == 115:
-                        self.pers.g += 1000 * int(HEIGHT / 600)
+                    if event.key == pygame.K_s:
+                        self.pers.g += 0.01
                     # esc - остановка уровня
-                    if event.key == 27:
+                    if event.key == pygame.K_ESCAPE:
                         self.stop_run()
                     self.clock.tick()
                 if event.type == pygame.KEYUP:
                     # d up
-                    if event.key == 100:
+                    if event.key == pygame.K_d:
                         self.pers.right_ran = False
                     # a up
-                    elif event.key == 97:
+                    elif event.key == pygame.K_a:
                         self.pers.left_run = False
                     # s up
-                    if event.key == 115:
-                        self.pers.g -= 1000 * int(HEIGHT / 600)
-            for i in self.logs:
-                if i.log_in(self.pers):
-                    self.pers.on_log = True
-                    self.pers.jump_v = 0
-                    self.pers.y = i.y_u - self.pers.height
-                    break
-                else:
-                    self.pers.on_log = False
-                # предпологаемая физика бревен
-                '''if i.log_knock(self.pers) == 'r':
-                    self.pers.right_log = True
-                elif i.log_knock(self.pers) == 'l':
-                    self.pers.left_log = True
-                else:
-                    self.pers.left_log = self.pers.right_log = False
-                if i.log_knock(self.pers) == 'u':
-                    self.pers.jump_v = 0'''
+                    if event.key == pygame.K_s:
+                        self.pers.g -= 0.01
+            # условия работы камеры
+            if not self.camera.cam_on and WIDTH // 2 < self.pers.rect.x:
+                self.camera.cam_on = True
+            if WIDTH // 2 > self.pers.rect.x:
+                self.camera.cam_on = False
+            if self.pers.rect.x - self.logs[0].rect.x > self.end_of_level - WIDTH // 2:
+                self.camera.cam_on = False
+            if WIDTH // 2 < self.pers.rect.x - self.logs[0].rect.x < self.end_of_level - WIDTH // 2:
+                self.camera.cam_on = True
+
             self.screen.fill((0, 0, 0))
-            time = self.clock.tick(FPS)
-            self.pers.run(time)
-            self.pers.fly(time)
+            self.clock.tick(FPS)
+            self.pers.run()
+            self.pers.fly()
             self.drawing()
             pygame.display.flip()
         pygame.quit()
 
     def drawing(self):
-        if self.do_center:
-            alp = self.pers.x - WIDTH // 2
-            if alp <= 0:
-                alp = 0
-            elif self.end_of_level - self.pers.x <= WIDTH // 2:
-                alp = self.end_of_level - WIDTH
-        else:
-            alp = 0
-        self.pers.draw(self.screen, alp)
-        for i in self.logs:
-            i.draw(self.screen, alp)
-        for i in self.enemies:
-            i.draw(self.screen)
+        self.camera.update(self.pers)
+        for sprite in all_sprites:
+            self.camera.apply(sprite)
+        all_sprites.draw(self.screen)
 
     def stop_run(self):
         font1 = pygame.font.Font(None, 50 * int(HEIGHT * WIDTH / (1366 * 768)))
@@ -114,10 +99,10 @@ class Level:
             event = pygame.event.wait()
             if event.type == pygame.KEYDOWN:
                 # y
-                if event.key == 121:
+                if event.key == pygame.K_y:
                     to_run = False
                 # n
-                elif event.key == 110:
+                elif event.key == pygame.K_n:
                     to_run = False
                     error_stop = True
         if not error_stop:

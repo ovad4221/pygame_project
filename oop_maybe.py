@@ -1,70 +1,65 @@
 import pygame
-from constans import WIDTH, HEIGHT
+from constans import *
 
 
-class Person:
+class Person(pygame.sprite.Sprite):
     def __init__(self, x, y):
-        self.rv = (1 / 6) * WIDTH
-        self.lv = -1 * self.rv
+        super().__init__(all_sprites, pers_sprites)
+        self.rv = 5
+        self.lv = -5
         self.width = int(40 * (WIDTH / 1366))
         self.height = int(60 * (HEIGHT / 768))
-        self.x = x
-        self.y = y
+        self.image = pygame.Surface([self.width, self.height])
+        self.image.fill(pygame.Color([255, 0, 0]))
+        self.rect = pygame.Rect(x, y, self.width, self.height)
         self.jump_v = 0
-        self.g = int(60 * (HEIGHT / 600))
-        self.on_log = True
+        self.g = 0.05
         self.left_run = False
         self.right_ran = False
-        self.left_log = False
-        self.right_log = False
+        # jump_count чтобы нельзя было несколько раз подряд прыгать, и для реализации двойных прыжков
+        self.jump_count = 0
 
-    def run(self, time):
-        if self.left_run and not self.right_ran and not self.left_log:
+    # изменил немного реализацию бега и прыжков, так как способ со временем не роботает со спрайтами (хз почему)
+    # теперь на каждый кадр перс смещается на 5 пиксилей
+    def run(self):
+        if self.left_run and not self.right_ran:
             speed = self.lv
-        elif not self.left_run and self.right_ran and not self.right_log:
+        elif not self.left_run and self.right_ran:
             speed = self.rv
         else:
             speed = 0
-        self.x += speed * time / 1000
+        self.rect = self.rect.move(speed, 0)
+        if pygame.sprite.spritecollide(self, logs_sprites, False):
+            self.rect = self.rect.move(-speed, 0)
 
     def jump(self):
-        if self.on_log:
-            self.jump_v = -75 * (HEIGHT / 600)
-            self.y -= 2 * (HEIGHT / 600)
-            self.on_log = False
+        if self.jump_count == 0:
+            self.jump_count += 1
+            self.jump_v = -5
+            self.rect.y -= 2 * (HEIGHT / 600)
 
-    def fly(self, time):
-        if not self.on_log:
-            self.y += self.jump_v * time / 1000
-            self.jump_v += self.g * time / 1000
+    def fly(self):
+        if not pygame.sprite.spritecollide(self, logs_sprites, False):
+            self.rect = self.rect.move(0, self.jump_v)
+            self.jump_v += self.g
+            # чтобы не было залипания в верхней точке прыжка увеличиваем ускорение
+            if 0 <= abs(self.jump_v) <= 1:
+                self.g = 0.5
+            else:
+                self.g = 0.05
+        if pygame.sprite.spritecollide(self, logs_sprites, False):
+            self.jump_v = 0
+            self.jump_count = 0
+            while pygame.sprite.spritecollide(self, logs_sprites, False):
+                self.rect = self.rect.move(0, -1)
 
-    def draw(self, screen, alp):
-        pygame.draw.rect(screen, '#ff0000', (int(self.x - alp), int(self.y), self.width, self.height))
 
-
-class Log:
+class Log(pygame.sprite.Sprite):
     def __init__(self, rect, color='#646423'):
-        self.x_l = rect[0]
-        self.y_u = rect[1]
-        self.width = rect[2]
-        self.height = rect[3]
-        self.color = color
-
-    def log_in(self, pers):
-        if (0 <= self.y_u - pers.y - pers.height < int(2 * (HEIGHT / 600)) and
-                (self.x_l < pers.x + pers.width and self.x_l + self.width > pers.x)):
-            return True
-        return False
-
-    # проверка на столкновение с доской. Возвращает 'r', 'l', 'u' ну или -1.
-    # показывает с какой стороны бревно
-    def log_knock(self, pers):
-        if (0 <= self.x_l - pers.x - pers.width < 2 * int(HEIGHT / 600)) and True:
-            return 'r'
-        return -1
-
-    def draw(self, screen, alp):
-        pygame.draw.rect(screen, self.color, (int(self.x_l - alp), self.y_u, self.width, self.height))
+        super().__init__(all_sprites, logs_sprites)
+        self.image = pygame.Surface([rect[2], rect[3]])
+        self.image.fill(color)
+        self.rect = pygame.Rect(rect[0], rect[1], rect[2], rect[3])
 
 
 class Hero(Person):
@@ -105,3 +100,24 @@ class Armor:
 
     def refresh(self):
         pass
+
+
+# для центровки перса сделал класс Камера из последнего урока
+class Camera:
+    # зададим начальный сдвиг камеры
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+        self.cam_on = False
+
+    # сдвинуть объект obj на смещение камеры
+    def apply(self, obj):
+        if self.cam_on:
+            obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    # позиционировать камеру на объекте target
+    def update(self, target):
+        if self.cam_on:
+            self.dx = -(target.rect.x + target.rect.w // 2 - WIDTH // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
