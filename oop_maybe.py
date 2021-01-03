@@ -5,13 +5,12 @@ from constans import *
 class Person(pygame.sprite.Sprite):
     def __init__(self, x, y, image):
         super().__init__(all_sprites, pers_sprites)
-        self.image = image
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rv = 5
-        self.lv = -5
         self.width = int(40 * (WIDTH / 1366))
         self.height = int(60 * (HEIGHT / 768))
+        self.image = pygame.transform.scale(image, (self.width, self.height))
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect().move(x, y)
+        self.speed = 5
         self.jump_v = 0
         self.g = 0.05
         self.left_run = False
@@ -23,13 +22,13 @@ class Person(pygame.sprite.Sprite):
     # теперь на каждый кадр перс смещается на 5 пиксилей
     def run(self):
         if self.left_run and not self.right_ran:
-            speed = self.lv
+            speed = -self.speed
         elif not self.left_run and self.right_ran:
-            speed = self.rv
+            speed = self.speed
         else:
             speed = 0
         self.rect = self.rect.move(speed, 0)
-        if pygame.sprite.spritecollideany(self, logs_sprites):
+        if pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask):
             self.rect = self.rect.move(-speed, 0)
 
     def jump(self):
@@ -39,7 +38,7 @@ class Person(pygame.sprite.Sprite):
             self.rect.y -= 2 * (HEIGHT / 600)
 
     def fly(self):
-        collided_sprite = pygame.sprite.spritecollideany(self, logs_sprites)
+        collided_sprite = pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask)
         if not collided_sprite:
             self.rect = self.rect.move(0, self.jump_v)
             self.jump_v += self.g
@@ -51,10 +50,10 @@ class Person(pygame.sprite.Sprite):
         # если персонаж попал в платформу после прыжка, передвигаем его из нее
         if collided_sprite:
             dy = -1
-            if collided_sprite.rect.y < self.rect.y:
+            if collided_sprite[0].rect.y < self.rect.y:
                 dy = 1
             self.jump_v = 0
-            while pygame.sprite.spritecollideany(self, logs_sprites):
+            while pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask):
                 self.rect = self.rect.move(0, dy)
             if dy == -1:
                 self.jump_count = 0
@@ -66,6 +65,7 @@ class Log(pygame.sprite.Sprite):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.image = image
+        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect().move(
             tile_width * pos_x, tile_height * pos_y)
 

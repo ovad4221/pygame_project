@@ -207,5 +207,5 @@ class Level:
             self.running = False
 
 
-x = Level(70, 400, 'map2.tmx')
+x = Level(1000, 400, 'map2.tmx')
 x.run()
