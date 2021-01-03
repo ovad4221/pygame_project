@@ -1,5 +1,7 @@
 import pygame
 import sys
+import os
+import pytmx
 from oop_maybe import Person, Log, Camera
 from constans import *
 
@@ -15,6 +17,33 @@ screen = pygame.display.set_mode(size)
 def terminate():
     pygame.quit()
     sys.exit()
+
+
+# загружаем tmx файл с уровнем
+def load_level(filename):
+    filename = "data/" + filename
+    if not os.path.isfile(filename):
+        print(f"Файл с изображением '{filename}' не найден")
+        sys.exit()
+    tiledmap = pytmx.load_pygame(filename)
+    return tiledmap
+
+
+# изображение персонажа
+def load_image(name, colorkey=None):
+    fullname = os.path.join('data', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с изображением '{fullname}' не найден")
+        sys.exit()
+    image = pygame.image.load(fullname)
+    if colorkey is not None:
+        image = image.convert()
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey)
+    else:
+        image = image.convert_alpha()
+    return image
 
 
 # тестовое стартовое меню
@@ -65,16 +94,17 @@ start_window()
 
 
 class Level:
-    def __init__(self, pers_x, pers_y, end_of_level, logs=[], enemies=[], do_center=True):
-        self.end_of_level = end_of_level
-        self.do_center = do_center
+    def __init__(self, pers_x, pers_y, map_name, enemies=[]):
         screen.fill((0, 0, 0))
         self.running = True
         self.alp = 0
-        self.pers = Person(pers_x, pers_y)
-        self.logs = logs
+        self.pers = Person(pers_x, pers_y, load_image('pers.png'))
+        self.tiles = load_level(map_name)
+        self.end_of_level = self.tiles.width * tile_width
         self.enemies = enemies
+        self.logs = []
         self.camera = Camera()
+        self.generate_level(self.tiles)
 
     def run(self):
         while self.running:
@@ -126,6 +156,18 @@ class Level:
             pygame.display.flip()
         pygame.quit()
 
+    def generate_level(self, level):
+        x, y = None, None
+        for y in range(level.height):
+            for x in range(level.width):
+                image = level.get_tile_image(x, y, 0)
+                id = level.tiledgidmap[level.get_tile_gid(x, y, 0)]
+                if id == 1:
+                    self.logs.append(Log(x, y, image))
+                elif id == 2:
+                    self.logs.append(Log(x, y, image))
+        return x, y
+
     def drawing(self):
         self.camera.update(self.pers)
         for sprite in all_sprites:
@@ -165,9 +207,5 @@ class Level:
             self.running = False
 
 
-x = Level(0, 400, 3700, [Log((0, 500, 400, 5)), Log((400, 460, 400, 5)), Log((1000, 430, 300, 5)),
-                         Log((1400, 400, 300, 5)), Log((2000, 400, 300, 5)),
-                         Log((2400, 400, 300, 5)), Log((3000, 350, 300, 5)),
-                         Log((3000, 250, 300, 5)), Log((3000, 400, 300, 5)),
-                         Log((3400, 200, 300, 5)), Log((3000, 300, 300, 5))])
+x = Level(70, 400, 'map2.tmx')
 x.run()

@@ -3,15 +3,15 @@ from constans import *
 
 
 class Person(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, image):
         super().__init__(all_sprites, pers_sprites)
+        self.image = image
+        self.mask = pygame.mask.from_surface(self.image)
         self.rv = 5
         self.lv = -5
         self.width = int(40 * (WIDTH / 1366))
         self.height = int(60 * (HEIGHT / 768))
-        self.image = pygame.Surface([self.width, self.height])
-        self.image.fill(pygame.Color([255, 0, 0]))
-        self.rect = pygame.Rect(x, y, self.width, self.height)
+        self.rect = self.image.get_rect().move(x, y)
         self.jump_v = 0
         self.g = 0.05
         self.left_run = False
@@ -29,7 +29,7 @@ class Person(pygame.sprite.Sprite):
         else:
             speed = 0
         self.rect = self.rect.move(speed, 0)
-        if pygame.sprite.spritecollide(self, logs_sprites, False):
+        if pygame.sprite.spritecollideany(self, logs_sprites):
             self.rect = self.rect.move(-speed, 0)
 
     def jump(self):
@@ -39,7 +39,8 @@ class Person(pygame.sprite.Sprite):
             self.rect.y -= 2 * (HEIGHT / 600)
 
     def fly(self):
-        if not pygame.sprite.spritecollide(self, logs_sprites, False):
+        collided_sprite = pygame.sprite.spritecollideany(self, logs_sprites)
+        if not collided_sprite:
             self.rect = self.rect.move(0, self.jump_v)
             self.jump_v += self.g
             # чтобы не было залипания в верхней точке прыжка увеличиваем ускорение
@@ -47,19 +48,26 @@ class Person(pygame.sprite.Sprite):
                 self.g = 0.5
             else:
                 self.g = 0.05
-        if pygame.sprite.spritecollide(self, logs_sprites, False):
+        # если персонаж попал в платформу после прыжка, передвигаем его из нее
+        if collided_sprite:
+            dy = -1
+            if collided_sprite.rect.y < self.rect.y:
+                dy = 1
             self.jump_v = 0
-            self.jump_count = 0
-            while pygame.sprite.spritecollide(self, logs_sprites, False):
-                self.rect = self.rect.move(0, -1)
+            while pygame.sprite.spritecollideany(self, logs_sprites):
+                self.rect = self.rect.move(0, dy)
+            if dy == -1:
+                self.jump_count = 0
 
 
 class Log(pygame.sprite.Sprite):
-    def __init__(self, rect, color='#646423'):
-        super().__init__(all_sprites, logs_sprites)
-        self.image = pygame.Surface([rect[2], rect[3]])
-        self.image.fill(color)
-        self.rect = pygame.Rect(rect[0], rect[1], rect[2], rect[3])
+    def __init__(self, pos_x, pos_y, image):
+        super().__init__(logs_sprites, all_sprites)
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.image = image
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
 
 
 class Hero(Person):
