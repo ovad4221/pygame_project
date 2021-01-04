@@ -163,9 +163,9 @@ class Level:
                 image = level.get_tile_image(x, y, 0)
                 id = level.tiledgidmap[level.get_tile_gid(x, y, 0)]
                 if id == 1:
-                    self.logs.append(Log(x, y, image))
+                    self.logs.append(Log(x, y, image, id))
                 elif id == 2:
-                    self.logs.append(Log(x, y, image))
+                    self.logs.append(Log(x, y, image, id))
         return x, y
 
     def drawing(self):
