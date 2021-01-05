@@ -2,8 +2,9 @@ import pygame
 import sys
 import os
 import pytmx
-from oop_maybe import Person, Log, Camera
+from oop_maybe import Person, Log, Camera, InfoInterface, Coin
 from constans import *
+from load_functions import *
 
 
 # это лучше делать вне класса
@@ -17,33 +18,6 @@ screen = pygame.display.set_mode(size)
 def terminate():
     pygame.quit()
     sys.exit()
-
-
-# загружаем tmx файл с уровнем
-def load_level(filename):
-    filename = "data/" + filename
-    if not os.path.isfile(filename):
-        print(f"Файл с изображением '{filename}' не найден")
-        sys.exit()
-    tiledmap = pytmx.load_pygame(filename)
-    return tiledmap
-
-
-# изображение персонажа
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    if colorkey is not None:
-        image = image.convert()
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    else:
-        image = image.convert_alpha()
-    return image
 
 
 # тестовое стартовое меню
@@ -105,6 +79,7 @@ class Level:
         self.logs = []
         self.camera = Camera()
         self.generate_level(self.tiles)
+        self.interface = InfoInterface(load_image('coin.png'))
 
     def run(self):
         while self.running:
@@ -127,7 +102,9 @@ class Level:
                     # esc - остановка уровня
                     if event.key == pygame.K_ESCAPE:
                         self.stop_run()
-                    clock.tick()
+                    if event.key == pygame.K_n:
+                        if self.pers.health:
+                            self.pers.health -= 10
                 if event.type == pygame.KEYUP:
                     # d up
                     if event.key == pygame.K_d:
@@ -150,6 +127,7 @@ class Level:
 
             screen.fill((0, 0, 0))
             clock.tick(FPS)
+            self.interface.update_info(self.pers.health, self.pers.coins_count)
             self.pers.run()
             self.pers.fly()
             self.drawing()
@@ -161,11 +139,12 @@ class Level:
         for y in range(level.height):
             for x in range(level.width):
                 image = level.get_tile_image(x, y, 0)
-                id = level.tiledgidmap[level.get_tile_gid(x, y, 0)]
-                if id == 1:
-                    self.logs.append(Log(x, y, image, id))
-                elif id == 2:
-                    self.logs.append(Log(x, y, image, id))
+                if image:
+                    id = level.tiledgidmap[level.get_tile_gid(x, y, 0)]
+                    if id == 1:
+                        self.logs.append(Log(x, y, image, id))
+                    elif id == 2:
+                        Coin(x, y, image)
         return x, y
 
     def drawing(self):
@@ -173,6 +152,10 @@ class Level:
         for sprite in all_sprites:
             self.camera.apply(sprite)
         all_sprites.draw(screen)
+        # обновляем положение интерфейса относительно персонажа
+        if self.camera.cam_on:
+            self.interface.update((self.pers.rect.x, self.pers.rect.y))
+        interface_sprite.draw(screen)
 
     def stop_run(self):
         font1 = pygame.font.Font(None, 50 * int(HEIGHT * WIDTH / (1366 * 768)))
@@ -207,5 +190,5 @@ class Level:
             self.running = False
 
 
-x = Level(1000, 400, 'map2.tmx')
+x = Level(80, 400, 'map3.tmx')
 x.run()

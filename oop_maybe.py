@@ -17,6 +17,8 @@ class Person(pygame.sprite.Sprite):
         self.right_ran = False
         # jump_count чтобы нельзя было несколько раз подряд прыгать, и для реализации двойных прыжков
         self.jump_count = 0
+        self.health = 100
+        self.coins_count = 0
 
     # изменил немного реализацию бега и прыжков, так как способ со временем не роботает со спрайтами (хз почему)
     # теперь на каждый кадр перс смещается на 5 пиксилей
@@ -28,8 +30,16 @@ class Person(pygame.sprite.Sprite):
         else:
             speed = 0
         self.rect = self.rect.move(speed, 0)
-        if pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask):
+        if pygame.sprite.spritecollide(self, logs_sprites, False):
             self.rect = self.rect.move(-speed, 0)
+            # if pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask)[0].tile_type == 1:
+            # self.rect = self.rect.move(-speed, 0)
+            # elif pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask)[0].tile_type == 2 and self.right_ran:
+            # self.rect = self.rect.move(0, -speed)
+            # elif pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask)[0].tile_type == 2 and self.left_run:
+            # self.rect = self.rect.move(0, speed)
+        if pygame.sprite.spritecollide(self, coins_sprites, True):
+            self.coins_count += 1
 
     def jump(self):
         if self.jump_count == 0:
@@ -38,7 +48,7 @@ class Person(pygame.sprite.Sprite):
             self.rect.y -= 2 * (HEIGHT / 600)
 
     def fly(self):
-        if not pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask):
+        if not pygame.sprite.spritecollide(self, logs_sprites, False):
             self.rect = self.rect.move(0, self.jump_v)
             self.jump_v += self.g
             # чтобы не было залипания в верхней точке прыжка увеличиваем ускорение
@@ -47,10 +57,13 @@ class Person(pygame.sprite.Sprite):
             else:
                 self.g = 0.05
         # если персонаж попал в платформу после прыжка, передвигаем его из нее
-        if pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask):
+        if pygame.sprite.spritecollide(self, logs_sprites, False):
             self.rect = self.rect.move(0, -self.jump_v)
             self.jump_v = 0
             self.jump_count = 0
+
+        if pygame.sprite.spritecollide(self, coins_sprites, True):
+            self.coins_count += 1
 
 
 class Log(pygame.sprite.Sprite):
@@ -59,6 +72,17 @@ class Log(pygame.sprite.Sprite):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.tile_type = tile_type
+        self.image = image
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect().move(
+            tile_width * pos_x, tile_height * pos_y)
+
+
+class Coin(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y, image):
+        super().__init__(coins_sprites, all_sprites)
+        self.pos_x = pos_x
+        self.pos_y = pos_y
         self.image = image
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect().move(
@@ -124,3 +148,30 @@ class Camera:
         if self.cam_on:
             self.dx = -(target.rect.x + target.rect.w // 2 - WIDTH // 2)
         self.dy = -(target.rect.y + target.rect.h // 2 - HEIGHT // 2)
+
+
+class InfoInterface(pygame.sprite.Sprite):
+    def __init__(self, coin_img):
+        super().__init__(interface_sprite)
+        self.image = pygame.Surface([WIDTH, HEIGHT // 20])
+        self.rect = pygame.Rect(0, 0, WIDTH, HEIGHT // 20)
+        self.coin_img = coin_img
+
+    def update(self, pos):
+        self.rect.x = pos[0] - WIDTH // 2 + 28
+        self.rect.y = pos[1] - HEIGHT // 2 + 42
+
+    def update_info(self, health, coin_count):
+        self.image.fill(pygame.Color('black'))
+        self.image.blit(self.coin_img, (self.rect.width - self.rect.width // 10,
+                                        self.rect.height // 2 - self.coin_img.get_height() // 2))
+        pygame.draw.rect(self.image, pygame.Color('red'),
+                         (self.rect.width // 20, self.rect.height // 2 - 15, int(health / max_health * 200), 30))
+        pygame.draw.rect(self.image, pygame.Color('white'),
+                         (self.rect.width // 20, self.rect.height // 2 - 15, 200, 30), 2)
+        font = pygame.font.Font(None, 50)
+        text = font.render(f"{coin_count}", True, (100, 255, 100))
+        text_x = self.rect.width - self.rect.width // 30 - text.get_width()
+        text_y = self.rect.height // 2 - text.get_height() // 2
+        self.image.blit(text, (text_x, text_y))
+
