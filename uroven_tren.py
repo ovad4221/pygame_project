@@ -102,6 +102,7 @@ class Level:
                     # esc - остановка уровня
                     if event.key == pygame.K_ESCAPE:
                         self.stop_run()
+                    # для теста шкалы здоровья
                     if event.key == pygame.K_n:
                         if self.pers.health:
                             self.pers.health -= 10
