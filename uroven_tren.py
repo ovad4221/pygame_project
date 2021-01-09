@@ -2,7 +2,7 @@ import pygame
 import sys
 import os
 import pytmx
-from oop_maybe import Person, Log, Camera, InfoInterface, Coin
+from oop_maybe import Person, Log, Camera, InfoInterface, Coin, Hero, Enemy
 from constans import *
 from load_functions import *
 
@@ -68,17 +68,22 @@ start_window()
 
 
 class Level:
-    def __init__(self, pers_x, pers_y, map_name, enemies=[]):
+    def __init__(self, pers_x, pers_y, map_name):
         screen.fill((0, 0, 0))
         self.running = True
         self.alp = 0
-        self.pers = Person(pers_x, pers_y, load_image('pers.png'))
+        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png'))
         self.tiles = load_level(map_name)
         self.end_of_level = self.tiles.width * tile_width
-        self.enemies = enemies
+        self.height_of_level = self.tiles.height * tile_width
         self.logs = []
         self.camera = Camera()
         self.generate_level(self.tiles)
+        # создаем врагов
+        self.enemies = []
+        for i in range(1):
+            self.enemies.append(
+                Enemy(enemies_sprites, load_image('pers.png'), (self.end_of_level, self.height_of_level)))
         self.interface = InfoInterface(load_image('coin.png'))
 
     def run(self):
@@ -130,7 +135,7 @@ class Level:
             clock.tick(FPS)
             self.interface.update_info(self.pers.health, self.pers.coins_count)
             self.pers.run()
-            self.pers.fly()
+            all_sprites.update(self.pers)
             self.drawing()
             pygame.display.flip()
         pygame.quit()

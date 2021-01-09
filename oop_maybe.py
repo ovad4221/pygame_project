@@ -1,51 +1,20 @@
 import pygame
+import random
 from constans import *
 
 
 class Person(pygame.sprite.Sprite):
-    def __init__(self, x, y, image):
-        super().__init__(all_sprites, pers_sprites)
+    def __init__(self, image, group):
+        super().__init__(all_sprites, group)
         self.width = int(40 * (WIDTH / 1366))
         self.height = int(60 * (HEIGHT / 768))
         self.image = pygame.transform.scale(image, (self.width, self.height))
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect().move(x, y)
         self.speed = 5
         self.jump_v = 0
         self.g = 0.05
-        self.left_run = False
-        self.right_ran = False
         # jump_count чтобы нельзя было несколько раз подряд прыгать, и для реализации двойных прыжков
         self.jump_count = 0
-        self.health = 100
-        self.coins_count = 0
-
-    # изменил немного реализацию бега и прыжков, так как способ со временем не роботает со спрайтами (хз почему)
-    # теперь на каждый кадр перс смещается на 5 пиксилей
-    def run(self):
-        if self.left_run and not self.right_ran:
-            speed = -self.speed
-        elif not self.left_run and self.right_ran:
-            speed = self.speed
-        else:
-            speed = 0
-        self.rect = self.rect.move(speed, 0)
-        if pygame.sprite.spritecollide(self, logs_sprites, False):
-            self.rect = self.rect.move(-speed, 0)
-            # if pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask)[0].tile_type == 1:
-            # self.rect = self.rect.move(-speed, 0)
-            # elif pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask)[0].tile_type == 2 and self.right_ran:
-            # self.rect = self.rect.move(0, -speed)
-            # elif pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask)[0].tile_type == 2 and self.left_run:
-            # self.rect = self.rect.move(0, speed)
-        if pygame.sprite.spritecollide(self, coins_sprites, True):
-            self.coins_count += 1
-
-    def jump(self):
-        if self.jump_count == 0:
-            self.jump_count += 1
-            self.jump_v = -5
-            self.rect.y -= 2 * (HEIGHT / 600)
 
     def fly(self):
         if not pygame.sprite.spritecollide(self, logs_sprites, False):
@@ -61,9 +30,6 @@ class Person(pygame.sprite.Sprite):
             self.rect = self.rect.move(0, -self.jump_v)
             self.jump_v = 0
             self.jump_count = 0
-
-        if pygame.sprite.spritecollide(self, coins_sprites, True):
-            self.coins_count += 1
 
 
 class Log(pygame.sprite.Sprite):
@@ -90,15 +56,93 @@ class Coin(pygame.sprite.Sprite):
 
 
 class Hero(Person):
-    def __init__(self, x, y, weapon, armor, heal, ko_heal=1):
-        super().__init__(x, y)
+    def __init__(self, x, y, group, image, weapon=None, armor=None, ko_heal=1):
+        super().__init__(image, group)
+        self.rect = self.image.get_rect().move(x, y)
+        self.left_run = False
+        self.right_ran = False
         self.weapon = weapon
         self.armor = armor
-        self.heal = heal
         self.ko_heal = ko_heal
+        self.health = 100
+        self.coins_count = 0
 
     def kick(self):
         pass
+
+# изменил немного реализацию бега и прыжков, так как способ со временем не роботает со спрайтами (хз почему)
+# теперь на каждый кадр перс смещается на 5 пиксилей
+    def run(self):
+        if self.left_run and not self.right_ran:
+            speed = -self.speed
+        elif not self.left_run and self.right_ran:
+            speed = self.speed
+        else:
+            speed = 0
+        self.rect = self.rect.move(speed, 0)
+        if pygame.sprite.spritecollide(self, logs_sprites, False):
+            self.rect = self.rect.move(-speed, 0)
+        if pygame.sprite.spritecollide(self, coins_sprites, True, pygame.sprite.collide_mask):
+            self.coins_count += 1
+
+    def jump(self):
+        if self.jump_count == 0:
+            self.jump_count += 1
+            self.jump_v = -5
+            self.rect.y -= 2 * (HEIGHT / 600)
+
+    def update(self, *args):
+        self.fly()
+        if pygame.sprite.spritecollide(self, coins_sprites, True):
+            self.coins_count += 1
+
+
+class Enemy(Person):
+    def __init__(self, group, image, level_size):
+        super().__init__(image, group)
+        self.damage = 10
+        width = level_size[0]
+        height = level_size[1]
+        self.rect = self.image.get_rect()
+        self.new = True
+        self.rect.x = random.randrange(width - self.rect.width)
+        self.rect.y = random.randrange(height - self.rect.height)
+        self.mask = pygame.mask.from_surface(self.image)
+        while self.new and len(group) > 0:
+            if (not any([pygame.sprite.collide_mask(self, i) for i in group if i != self])) and\
+                    (not any([pygame.sprite.collide_mask(self, i) for i in pers_sprites])) and\
+                    (not any([pygame.sprite.collide_mask(self, i) for i in logs_sprites])):
+                self.new = False
+            else:
+                self.rect.x = random.randrange(width - self.rect.width)
+                self.rect.y = random.randrange(height - self.rect.height)
+                self.mask = pygame.mask.from_surface(self.image)
+        self.speed = random.randrange(1, 3)
+        self.left_run = True
+        self.habitat = self.rect.x
+        self.left_run = True
+        self.target_found = False
+
+    def update(self, target):
+        self.fly()
+        speed = 0
+        if self.left_run:
+            speed = -self.speed
+        elif not self.left_run:
+            speed = self.speed
+        self.rect = self.rect.move(speed, 0)
+        if pygame.sprite.spritecollide(self, logs_sprites, False):
+            self.rect = self.rect.move(-speed, 0)
+            # self.left_run, self.right_ran = self.right_ran, self.left_run
+        if self.habitat - 150 > self.rect.x or self.habitat + 150 < self.rect.x and not self.target_found:
+            self.left_run = not self.left_run
+        if self.habitat - 150 <= target.rect.x <= self.habitat + 150:
+            self.target_found = True
+        if self.target_found:
+            if target.rect.x > self.rect.x:
+                self.left_run = False
+            else:
+                self.left_run = True
 
 
 class Weapon:
@@ -141,6 +185,8 @@ class Camera:
     def apply(self, obj):
         if self.cam_on:
             obj.rect.x += self.dx
+            if type(obj) == Enemy:
+                obj.habitat += self.dx
         obj.rect.y += self.dy
 
     # позиционировать камеру на объекте target
