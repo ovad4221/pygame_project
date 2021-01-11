@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from constans import *
 
 
@@ -41,7 +42,7 @@ class Log(pygame.sprite.Sprite):
         self.image = image
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect().move(
-            tile_width * pos_x, tile_height * pos_y)
+            TILE_WIDTH * pos_x, TILE_HEIGHT * pos_y)
 
 
 class Coin(pygame.sprite.Sprite):
@@ -52,7 +53,7 @@ class Coin(pygame.sprite.Sprite):
         self.image = image
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect().move(
-            tile_width * pos_x, tile_height * pos_y)
+            TILE_WIDTH * pos_x, TILE_HEIGHT * pos_y)
 
 
 class Hero(Person):
@@ -122,9 +123,12 @@ class Enemy(Person):
         self.habitat = self.rect.x
         self.left_run = True
         self.target_found = False
+        self.health = 50
+        self.health_scale = HealthScale(self)
 
     def update(self, target):
         self.fly()
+        self.health_scale.update_info(self)
         speed = 0
         if self.left_run:
             speed = -self.speed
@@ -143,6 +147,65 @@ class Enemy(Person):
                 self.left_run = False
             else:
                 self.left_run = True
+
+        if self.health <= 0:
+            self.kill()
+
+
+# пуля
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, cursor_x, cursor_y):
+        super().__init__(all_sprites, bullet_sprites)
+        self.image = pygame.Surface((10, 10))
+        pygame.draw.circle(self.image, pygame.Color('blue'), (5, 5), 5)
+        self.image.set_colorkey(self.image.get_at((0, 0)))
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.mask = pygame.mask.from_surface(self.image)
+        alpha = math.atan((cursor_y - y) / (cursor_x - x))
+        self.speedx = abs(BULLET_SPEED * math.cos(alpha))
+        self.speedy = abs(BULLET_SPEED * math.sin(alpha))
+        if y < cursor_y and x > cursor_x:
+            self.speedy = -self.speedy
+        elif y < cursor_y and x < cursor_x:
+            self.speedy = -self.speedy
+            self.speedx = -self.speedx
+        elif y > cursor_y and x < cursor_x:
+            self.speedx = -self.speedx
+        self.damage = 20
+
+    def update(self, *args):
+        self.rect.x -= self.speedx
+        self.rect.y -= self.speedy
+        if pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask):
+            self.kill()
+        bullet_target = pygame.sprite.spritecollide(self, enemies_sprites, False, pygame.sprite.collide_mask)
+        if bullet_target:
+            bullet_target[0].health -= self.damage
+            self.kill()
+
+
+# шкала здоровья врагов
+class HealthScale(pygame.sprite.Sprite):
+    def __init__(self, owner):
+        super().__init__(all_sprites, health_scale_sprites)
+        self.image = pygame.Surface((int(0.8 * owner.rect.width), int(0.08 * owner.rect.height)))
+        self.rect = self.image.get_rect()
+        self.rect.x = owner.rect.x
+        self.rect.y = owner.rect.y - int(0.06 * owner.rect.height)
+
+    def update_info(self, owner):
+        if owner.health <= 0:
+            self.kill()
+        self.image.fill(pygame.Color('black'))
+        self.rect.x = owner.rect.x + (owner.rect.width - self.rect.width) // 2
+        self.rect.y = owner.rect.y - int(0.15 * owner.rect.height)
+        pygame.draw.rect(self.image, pygame.Color('green'),
+                         (0, 0, int((owner.health / MAX_ENEMY_HEALTH) * self.rect.width), self.rect.height))
+        pygame.draw.rect(self.image, pygame.Color('white'), (0, 0, self.rect.width, self.rect.height), 1)
+
+
+
 
 
 class Weapon:
@@ -200,6 +263,7 @@ class InfoInterface(pygame.sprite.Sprite):
     def __init__(self, coin_img):
         super().__init__(interface_sprite)
         self.image = pygame.Surface([WIDTH, HEIGHT // 20])
+        self.image.set_colorkey(self.image.get_at((0, 0)))
         self.rect = pygame.Rect(0, 0, WIDTH, HEIGHT // 20)
         self.coin_img = coin_img
 
@@ -209,10 +273,11 @@ class InfoInterface(pygame.sprite.Sprite):
 
     def update_info(self, health, coin_count):
         self.image.fill(pygame.Color('black'))
+        self.image.set_colorkey(self.image.get_at((0, 0)))
         self.image.blit(self.coin_img, (self.rect.width - self.rect.width // 10,
                                         self.rect.height // 2 - self.coin_img.get_height() // 2))
         pygame.draw.rect(self.image, pygame.Color('red'),
-                         (self.rect.width // 20, self.rect.height // 2 - 15, int(health / max_health * 200), 30))
+                         (self.rect.width // 20, self.rect.height // 2 - 15, int(health / MAX_HEALTH * 200), 30))
         pygame.draw.rect(self.image, pygame.Color('white'),
                          (self.rect.width // 20, self.rect.height // 2 - 15, 200, 30), 2)
         font = pygame.font.Font(None, 50)

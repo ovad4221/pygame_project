@@ -2,7 +2,7 @@ import pygame
 import sys
 import os
 import pytmx
-from oop_maybe import Person, Log, Camera, InfoInterface, Coin, Hero, Enemy
+from oop_maybe import Person, Log, Camera, InfoInterface, Coin, Hero, Enemy, Bullet
 from constans import *
 from load_functions import *
 
@@ -74,8 +74,8 @@ class Level:
         self.alp = 0
         self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png'))
         self.tiles = load_level(map_name)
-        self.end_of_level = self.tiles.width * tile_width
-        self.height_of_level = self.tiles.height * tile_width
+        self.end_of_level = self.tiles.width * TILE_WIDTH
+        self.height_of_level = self.tiles.height * TILE_HEIGHT
         self.logs = []
         self.camera = Camera()
         self.generate_level(self.tiles)
@@ -107,10 +107,10 @@ class Level:
                     # esc - остановка уровня
                     if event.key == pygame.K_ESCAPE:
                         self.stop_run()
-                    # для теста шкалы здоровья
-                    if event.key == pygame.K_n:
-                        if self.pers.health:
-                            self.pers.health -= 10
+                    # для теста пуль
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if len(bullet_sprites) < 10:
+                        Bullet(self.pers.rect.x + self.pers.rect.width // 2, self.pers.rect.y, *event.pos)
                 if event.type == pygame.KEYUP:
                     # d up
                     if event.key == pygame.K_d:

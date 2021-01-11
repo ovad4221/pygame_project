@@ -12,10 +12,18 @@ logs_sprites = pygame.sprite.Group()
 enemies_sprites = pygame.sprite.Group()
 coins_sprites = pygame.sprite.Group()
 interface_sprite = pygame.sprite.Group()
+bullet_sprites = pygame.sprite.Group()
+health_scale_sprites = pygame.sprite.Group()
 
 # size
-tile_width = 50
-tile_height = 50
+TILE_WIDTH = 50
+TILE_HEIGHT = 50
 
 # pers parameters
-max_health = 100
+MAX_HEALTH = 100
+
+# ememies parameters
+MAX_ENEMY_HEALTH = 50
+
+# game parameters
+BULLET_SPEED = 5
