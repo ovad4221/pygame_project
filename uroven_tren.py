@@ -2,7 +2,7 @@ import pygame
 import sys
 import os
 import pytmx
-from oop_maybe import Person, Log, Camera, InfoInterface, Coin, Hero, Enemy, Bullet
+from oop_maybe import Log, Camera, InfoInterface, Coin, Hero, Enemy, Weapon
 from constans import *
 from load_functions import *
 
@@ -22,7 +22,7 @@ def terminate():
 
 # тестовое стартовое меню
 def start_window():
-    screen.fill((0, 0, 0))
+    screen.fill(BLACK)
     color_play = (100, 255, 100)
     color_quit = (100, 255, 100)
     font = pygame.font.Font(None, 150)
@@ -64,6 +64,23 @@ def start_window():
         pygame.display.flip()
 
 
+def game_over():
+    img = load_image('gameover.jpg')
+    x = WIDTH // 2 - img.get_width() // 2
+    y = HEIGHT // 2 - img.get_height() // 2
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN or\
+                    event.type == pygame.KEYDOWN:
+                return
+        screen.fill(BLACK)
+        screen.blit(img, (x, y))
+        pygame.display.flip()
+
+
 start_window()
 
 
@@ -72,7 +89,7 @@ class Level:
         screen.fill((0, 0, 0))
         self.running = True
         self.alp = 0
-        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png'))
+        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png'), Weapon())
         self.tiles = load_level(map_name)
         self.end_of_level = self.tiles.width * TILE_WIDTH
         self.height_of_level = self.tiles.height * TILE_HEIGHT
@@ -109,8 +126,7 @@ class Level:
                         self.stop_run()
                     # для теста пуль
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if len(bullet_sprites) < 10:
-                        Bullet(self.pers.rect.x + self.pers.rect.width // 2, self.pers.rect.y, *event.pos)
+                    self.pers.kick(event.pos)
                 if event.type == pygame.KEYUP:
                     # d up
                     if event.key == pygame.K_d:
@@ -137,6 +153,9 @@ class Level:
             self.pers.run()
             all_sprites.update(self.pers)
             self.drawing()
+            if self.pers.health <= 0:
+                game_over()
+                self.stop_run()
             pygame.display.flip()
         pygame.quit()
 

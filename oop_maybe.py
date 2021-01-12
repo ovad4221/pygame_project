@@ -68,8 +68,8 @@ class Hero(Person):
         self.health = 100
         self.coins_count = 0
 
-    def kick(self):
-        pass
+    def kick(self, pos):
+        self.weapon.kick(self, pos)
 
 # изменил немного реализацию бега и прыжков, так как способ со временем не роботает со спрайтами (хз почему)
 # теперь на каждый кадр перс смещается на 5 пиксилей
@@ -96,6 +96,8 @@ class Hero(Person):
         self.fly()
         if pygame.sprite.spritecollide(self, coins_sprites, True):
             self.coins_count += 1
+        if self.health <= 0:
+            self.kill()
 
 
 class Enemy(Person):
@@ -125,6 +127,8 @@ class Enemy(Person):
         self.target_found = False
         self.health = 50
         self.health_scale = HealthScale(self)
+        self.clock = pygame.time.Clock()
+        self.time = 0
 
     def update(self, target):
         self.fly()
@@ -151,10 +155,19 @@ class Enemy(Person):
         if self.health <= 0:
             self.kill()
 
+        self.time += self.clock.tick()
+        if self.time >= PERIODICITY_OF_ATTACK:
+            if self.target_found:
+                self.attack(target)
+                self.time = 0
+
+    def attack(self, target):
+        Bullet(self.rect.x, self.rect.y, target.rect.x, target.rect.y, self, ENEMY_DAMAGE)
+
 
 # пуля
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, cursor_x, cursor_y):
+    def __init__(self, x, y, cursor_x, cursor_y, owner, damage):
         super().__init__(all_sprites, bullet_sprites)
         self.image = pygame.Surface((10, 10))
         pygame.draw.circle(self.image, pygame.Color('blue'), (5, 5), 5)
@@ -162,17 +175,21 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
         self.mask = pygame.mask.from_surface(self.image)
-        alpha = math.atan((cursor_y - y) / (cursor_x - x))
-        self.speedx = abs(BULLET_SPEED * math.cos(alpha))
-        self.speedy = abs(BULLET_SPEED * math.sin(alpha))
-        if y < cursor_y and x > cursor_x:
-            self.speedy = -self.speedy
-        elif y < cursor_y and x < cursor_x:
-            self.speedy = -self.speedy
-            self.speedx = -self.speedx
-        elif y > cursor_y and x < cursor_x:
-            self.speedx = -self.speedx
-        self.damage = 20
+        try:
+            alpha = math.atan((cursor_y - y) / (cursor_x - x))
+            self.speedx = abs(BULLET_SPEED * math.cos(alpha))
+            self.speedy = abs(BULLET_SPEED * math.sin(alpha))
+            if y <= cursor_y and x >= cursor_x:
+                self.speedy = -self.speedy
+            elif y <= cursor_y and x <= cursor_x:
+                self.speedy = -self.speedy
+                self.speedx = -self.speedx
+            elif y >= cursor_y and x <= cursor_x:
+                self.speedx = -self.speedx
+        except ZeroDivisionError:
+            self.kill()
+        self.damage = damage
+        self.owner = owner
 
     def update(self, *args):
         self.rect.x -= self.speedx
@@ -181,8 +198,15 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
         bullet_target = pygame.sprite.spritecollide(self, enemies_sprites, False, pygame.sprite.collide_mask)
         if bullet_target:
-            bullet_target[0].health -= self.damage
-            self.kill()
+            if type(bullet_target[0]) != type(self.owner):
+                bullet_target[0].health -= self.damage
+                self.kill()
+
+        bullet_target = pygame.sprite.spritecollide(self, pers_sprites, False, pygame.sprite.collide_mask)
+        if bullet_target:
+            if type(bullet_target[0]) != type(self.owner):
+                bullet_target[0].health -= self.damage
+                self.kill()
 
 
 # шкала здоровья врагов
@@ -205,18 +229,15 @@ class HealthScale(pygame.sprite.Sprite):
         pygame.draw.rect(self.image, pygame.Color('white'), (0, 0, self.rect.width, self.rect.height), 1)
 
 
-
-
-
 class Weapon:
-    def __init__(self, lvl, ko_damage=1, ko_rad=1, chance_critic=0.06):
-        self.lvl = lvl
+    def __init__(self, ko_damage=1, ko_rad=1, chance_critic=0.06):
         self.ko_damage = ko_damage
         self.ko_rad = ko_rad
         self.chance_critic = chance_critic
 
-    def kick(self):
-        pass
+    def kick(self, owner, pos):
+        if len(bullet_sprites) < 10:
+            Bullet(owner.rect.x + owner.rect.width // 2, owner.rect.y, pos[0], pos[1], owner, PERS_DAMAGE)
 
     def mega_kick_1(self):
         pass

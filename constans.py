@@ -21,9 +21,15 @@ TILE_HEIGHT = 50
 
 # pers parameters
 MAX_HEALTH = 100
+PERS_DAMAGE = 20
 
 # ememies parameters
 MAX_ENEMY_HEALTH = 50
+PERIODICITY_OF_ATTACK = 1000
+ENEMY_DAMAGE = 20
 
 # game parameters
 BULLET_SPEED = 5
+
+# Colours
+BLACK = (0, 0, 0)
