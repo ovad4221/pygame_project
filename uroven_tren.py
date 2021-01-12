@@ -23,8 +23,8 @@ def terminate():
 # тестовое стартовое меню
 def start_window():
     screen.fill(BLACK)
-    color_play = (100, 255, 100)
-    color_quit = (100, 255, 100)
+    color_play = BUTTON_COLOR
+    color_quit = BUTTON_COLOR
     font = pygame.font.Font(None, 150)
     text_play = font.render("Play", True, color_play)
     text_quit = font.render("Quit", True, color_quit)
@@ -40,14 +40,14 @@ def start_window():
             if event.type == pygame.MOUSEMOTION:
                 if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
                         text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
-                    color_play = (50, 125, 50)
+                    color_play = ACTIVE_COLOR
                 else:
-                    color_play = (100, 255, 100)
+                    color_play = BUTTON_COLOR
                 if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
                         text_y_quit <= event.pos[1] <= text_y_quit + text_quit.get_height():
-                    color_quit = (50, 125, 50)
+                    color_quit = ACTIVE_COLOR
                 else:
-                    color_quit = (100, 255, 100)
+                    color_quit = BUTTON_COLOR
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if text_x <= event.pos[0] <= text_x + text_play.get_width() and\
                         text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
@@ -60,6 +60,50 @@ def start_window():
         text_quit = font.render("Quit", True, color_quit)
         screen.blit(text_play, (text_x, text_y_play))
         screen.blit(text_quit, (text_x, text_y_quit))
+        clock.tick(FPS)
+        pygame.display.flip()
+
+
+def restart_window():
+    screen.fill(BLACK)
+    color_restart = BUTTON_COLOR
+    color_back = BUTTON_COLOR
+    font = pygame.font.Font(None, 150)
+    text_restart = font.render("Restart", True, color_restart)
+    text_back = font.render("Back to menu", True, color_back)
+    text_x_restart = WIDTH // 2 - text_restart.get_width() // 2
+    text_x_back = WIDTH // 2 - text_back.get_width() // 2
+    text_y_restart = HEIGHT // 2 - text_restart.get_height() // 2 - HEIGHT // 8
+    text_y_back = HEIGHT // 2 - text_back.get_height() // 2 + HEIGHT // 8
+
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEMOTION:
+                if text_x_restart <= event.pos[0] <= text_x_restart + text_restart.get_width() and \
+                        text_y_restart <= event.pos[1] <= text_y_restart + text_restart.get_height():
+                    color_restart = ACTIVE_COLOR
+                else:
+                    color_restart = BUTTON_COLOR
+                if text_x_back <= event.pos[0] <= text_x_back + text_back.get_width() and \
+                        text_y_back <= event.pos[1] <= text_y_back + text_back.get_height():
+                    color_back = ACTIVE_COLOR
+                else:
+                    color_back = BUTTON_COLOR
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if text_x_restart <= event.pos[0] <= text_x_restart + text_restart.get_width() and\
+                        text_y_restart <= event.pos[1] <= text_y_restart + text_restart.get_height():
+                    return
+                if text_x_back <= event.pos[0] <= text_x_back + text_restart.get_width() and \
+                        text_y_back <= event.pos[1] <= text_y_back + text_back.get_height():
+                    return start_window()
+
+        text_restart = font.render("Restart", True, color_restart)
+        text_back = font.render("Back to menu", True, color_back)
+        screen.blit(text_restart, (text_x_restart, text_y_restart))
+        screen.blit(text_back, (text_x_back, text_y_back))
         clock.tick(FPS)
         pygame.display.flip()
 
@@ -86,6 +130,7 @@ start_window()
 
 class Level:
     def __init__(self, pers_x, pers_y, map_name):
+        self.default_parameters = (pers_x, pers_y, map_name)
         screen.fill((0, 0, 0))
         self.running = True
         self.alp = 0
@@ -155,7 +200,8 @@ class Level:
             self.drawing()
             if self.pers.health <= 0:
                 game_over()
-                self.stop_run()
+                restart_window()
+                self.restart_level()
             pygame.display.flip()
         pygame.quit()
 
@@ -171,6 +217,12 @@ class Level:
                     elif id == 2:
                         Coin(x, y, image)
         return x, y
+
+    def restart_level(self):
+        for group in SPRITE_GROUPS:
+            for item in group:
+                item.kill()
+        self.__init__(*self.default_parameters)
 
     def drawing(self):
         self.camera.update(self.pers)
