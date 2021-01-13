@@ -1,5 +1,5 @@
 import pygame
-from oop_menu import Board, load_image
+from oop_menu import *
 from constans import *
 
 
@@ -9,8 +9,10 @@ if __name__ == '__main__':
     size = width, height = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
     screen.fill((0, 0, 0))
-
     board = Board('map-obj.txt', load_image)
+    board.render(screen)
+    camera = Camera(board.pers.rect.x, board.pers.rect.y)
+    clock = pygame.time.Clock()
     running = True
     while running:
         for event in pygame.event.get():
@@ -19,8 +21,31 @@ if __name__ == '__main__':
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
-        all_sprites.draw(screen)
+                elif event.key == pygame.K_w:
+                    board.pers.up_run = True
+                elif event.key == pygame.K_s:
+                    board.pers.down_run = True
+                elif event.key == pygame.K_a:
+                    board.pers.left_run = True
+                elif event.key == pygame.K_d:
+                    board.pers.right_run = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_w:
+                    board.pers.up_run = False
+                elif event.key == pygame.K_s:
+                    board.pers.down_run = False
+                elif event.key == pygame.K_a:
+                    board.pers.left_run = False
+                elif event.key == pygame.K_d:
+                    board.pers.right_run = False
+        all_sprites.update(clock.tick(FPS))
+        camera.update(board.pers)
+        board.left += camera.get_delta()[0]
+        board.top += camera.get_delta()[1]
+        for sprite in all_sprites:
+            camera.apply(sprite)
         board.render(screen)
+        all_sprites.draw(screen)
         pygame.display.flip()
         screen.fill((0, 0, 0))
     pygame.quit()
