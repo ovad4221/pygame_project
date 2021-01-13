@@ -2,7 +2,6 @@ import pygame
 from oop_menu import *
 from constans import *
 
-
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Решение')
@@ -11,6 +10,14 @@ if __name__ == '__main__':
     screen.fill((0, 0, 0))
     board = Board('map-obj.txt', load_image)
     board.render(screen)
+    Barier(board.left, board.top, board.w_n * board.cell_size, board.h_n * board.cell_size, False, False, all_sprites,
+           bar_sprites)
+    Barier(board.left, board.top, board.w_n * board.cell_size, board.h_n * board.cell_size, True, False, all_sprites,
+           bar_sprites)
+    Barier(board.left, board.top, board.w_n * board.cell_size, board.h_n * board.cell_size, False, True, all_sprites,
+           bar_sprites)
+    Barier(board.left, board.top, board.w_n * board.cell_size, board.h_n * board.cell_size, True, True, all_sprites,
+           bar_sprites)
     camera = Camera(board.pers.rect.x, board.pers.rect.y)
     clock = pygame.time.Clock()
     running = True

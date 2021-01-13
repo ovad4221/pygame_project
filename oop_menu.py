@@ -5,6 +5,32 @@ from constans import *
 from random import randint
 
 
+class Barier(pygame.sprite.Sprite):
+    def __init__(self, x0, y0, w, h, horizontal, rev, *group):
+        super().__init__(*group)
+        self.napr = ''
+        if horizontal:
+            if rev:
+                self.image = pygame.transform.scale(load_image('туманность.jpg'), (w * 2, HEIGHT // 2))
+                self.rect = pygame.rect.Rect(x0 - w // 2, y0 - self.image.get_height(), *self.image.get_size())
+                self.napr = 'up'
+            else:
+                self.image = pygame.transform.scale(pygame.transform.flip(load_image('туманность.jpg'), False, True),
+                                                    (w * 2, HEIGHT // 2))
+                self.rect = pygame.rect.Rect(x0 - w // 2, y0 + h, *self.image.get_size())
+                self.napr = 'down'
+        else:
+            if rev:
+                self.image = pygame.transform.scale(load_image('туманность_rev.jpg'), (WIDTH // 2, h))
+                self.rect = pygame.rect.Rect(x0 - self.image.get_width(), y0, *self.image.get_size())
+                self.napr = 'left'
+            else:
+                self.image = pygame.transform.scale(
+                    pygame.transform.flip(load_image('туманность_rev.jpg'), False, True), (WIDTH // 2, h))
+                self.rect = pygame.rect.Rect(x0 + w, y0, *self.image.get_size())
+                self.napr = 'right'
+
+
 class Camera:
     # зададим начальный сдвиг камеры
     def __init__(self, dx, dy):
@@ -42,33 +68,85 @@ def load_image(name, colorkey=None):
 class WarShipOrPig(pygame.sprite.Sprite):
     def __init__(self, x, y, cell_size, *group):
         super().__init__(*group)
-        self.im_pictures = [pygame.transform.scale(load_image('ship1.jpg', colorkey=-1), (cell_size, cell_size)),
-                            pygame.transform.scale(load_image('ship1v.jpg', colorkey=-1), (cell_size, cell_size)),
-                            pygame.transform.scale(load_image('ship2.jpg', colorkey=-1), (cell_size, cell_size)),
-                            pygame.transform.scale(load_image('ship2v.jpg', colorkey=-1), (cell_size, cell_size))]
+        self.im_pictures = [pygame.transform.scale(load_image('boat_up1.png'), (cell_size, cell_size)),
+                            pygame.transform.scale(load_image('boat_up2.png'), (cell_size, cell_size)),
+                            pygame.transform.flip(
+                                pygame.transform.scale(load_image('boat_up1.png'), (cell_size, cell_size)), False,
+                                True),
+                            pygame.transform.flip(
+                                pygame.transform.scale(load_image('boat_up2.png'), (cell_size, cell_size)), False,
+                                True),
+                            pygame.transform.scale(load_image('boat_ri1.png'), (cell_size, cell_size)),
+                            pygame.transform.scale(load_image('boat_ri2.png'), (cell_size, cell_size)),
+                            pygame.transform.flip(
+                                pygame.transform.scale(load_image('boat_ri1.png'), (cell_size, cell_size)), True,
+                                False),
+                            pygame.transform.flip(
+                                pygame.transform.scale(load_image('boat_ri2.png'), (cell_size, cell_size)), True,
+                                False),
+                            pygame.transform.scale(load_image('horse_ri.png'), (cell_size, cell_size)),
+                            pygame.transform.scale(load_image('horse_up.png'), (cell_size, cell_size)),
+                            pygame.transform.flip(
+                                pygame.transform.scale(load_image('horse_up.png'), (cell_size, cell_size)), False,
+                                True),
+                            pygame.transform.flip(
+                                pygame.transform.scale(load_image('horse_ri.png'), (cell_size, cell_size)), True,
+                                False)]
         self.image = self.im_pictures[0]
         self.rect = pygame.rect.Rect(x, y, cell_size, cell_size)
 
+        self.ves_lo = False
         self.left_run = False
         self.right_run = False
         self.up_run = False
         self.down_run = False
+        self.in_ground = False
+        self.arr_collide = [-1, -1]
 
-        self.v = WIDTH // 15
+        self.v = WIDTH // 11
 
     def update(self, time):
+        spr = pygame.sprite.spritecollide(self, bar_sprites, False)
+        self.arr_collide = [-1, -1]
+        if spr:
+            for i in range(len(spr)):
+                self.arr_collide[i] = spr[i].napr
         if pygame.sprite.spritecollideany(self, ground_sprites):
-            self.image = self.im_pictures[2]
+            self.in_ground = True
         else:
-            self.image = self.im_pictures[0]
-        if self.left_run and not self.right_run:
+            self.in_ground = False
+
+        if self.left_run and not self.right_run and 'left' not in self.arr_collide:
             self.rect.x += round(self.v * -1 * time / 1000)
-        elif not self.left_run and self.right_run:
+            if not self.in_ground:
+                self.image = self.im_pictures[6 + self.ves_lo]
+                self.ves_lo = not self.ves_lo
+            else:
+                self.image = self.im_pictures[11]
+
+        elif not self.left_run and self.right_run and 'right' not in self.arr_collide:
             self.rect.x += round(self.v * time / 1000)
-        if self.up_run and not self.down_run:
+            if not self.in_ground:
+                self.image = self.im_pictures[4 + self.ves_lo]
+                self.ves_lo = not self.ves_lo
+            else:
+                self.image = self.im_pictures[8]
+
+        if self.up_run and not self.down_run and 'up' not in self.arr_collide:
             self.rect.y += round(self.v * -1 * time / 1000)
-        elif not self.up_run and self.down_run:
+            if not self.in_ground:
+                self.image = self.im_pictures[0 + self.ves_lo]
+                self.ves_lo = not self.ves_lo
+            else:
+                self.image = self.im_pictures[9]
+
+        elif not self.up_run and self.down_run and 'down' not in self.arr_collide:
             self.rect.y += round(self.v * time / 1000)
+            if not self.in_ground:
+                self.image = self.im_pictures[2 + self.ves_lo]
+                self.ves_lo = not self.ves_lo
+            else:
+                self.image = self.im_pictures[10]
 
 
 class Ground(pygame.sprite.Sprite):
@@ -107,9 +185,6 @@ class Board:
             for j in range(self.w_n):
                 if self.board[i][j] == '~':
                     screen.blit(self.more_spok, (x, y))
-                elif self.board[i][j] == 'X':
-                    self.pers = WarShipOrPig(x, y, self.cell_size, all_sprites)
-                    self.board[i][j] = '~'
                 elif self.board[i][j] == '^':
                     screen.blit(self.bereg2, (x, y))
                 elif self.board[i][j] == '<':
@@ -119,6 +194,9 @@ class Board:
                 elif self.board[i][j] == '_':
                     screen.blit(self.bereg, (x, y))
 
+                elif self.board[i][j] == 'X':
+                    self.pers = WarShipOrPig(x, y, self.cell_size, all_sprites)
+                    self.board[i][j] = '>'
                 elif self.board[i][j] == '#':
                     Ground(x, y, self.pesok, all_sprites, ground_sprites)
                     self.board[i][j] = '+'
