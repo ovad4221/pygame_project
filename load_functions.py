@@ -7,18 +7,18 @@ import pygame
 # загружаем tmx файл с уровнем
 def load_level(filename):
     filename = "data/" + filename
-    if not os.path.isfile(filename):
-        print(f"Файл с изображением '{filename}' не найден")
-        sys.exit()
+    assert os.path.isfile(filename)
     tiledmap = pytmx.load_pygame(filename)
     return tiledmap
 
 
-# изображение персонажа
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
+def load_image(name, name_p, colorkey=None):
+    fullname = os.path.join(name_p, name)
+    # если файл не существует, то выходим
+    try:
+        assert os.path.isfile(fullname)
+    except AssertionError:
+        print(fullname)
         sys.exit()
     image = pygame.image.load(fullname)
     if colorkey is not None:

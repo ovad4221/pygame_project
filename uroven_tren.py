@@ -2,7 +2,7 @@ import pygame
 import sys
 import os
 import pytmx
-from oop_maybe import Person, Log, Camera, InfoInterface, Coin, Hero, Enemy, Bullet
+from oop_maybe import *
 from constans import *
 from load_functions import *
 
@@ -20,59 +20,21 @@ def terminate():
     sys.exit()
 
 
-# тестовое стартовое меню
-def start_window():
-    screen.fill((0, 0, 0))
-    color_play = (100, 255, 100)
-    color_quit = (100, 255, 100)
-    font = pygame.font.Font(None, 150)
-    text_play = font.render("Play", True, color_play)
-    text_quit = font.render("Quit", True, color_quit)
-    text_x = WIDTH // 2 - text_play.get_width() // 2
-    text_y_play = HEIGHT // 2 - text_play.get_height() // 2 - HEIGHT // 8
-    text_y_quit = HEIGHT // 2 - text_quit.get_height() // 2 + HEIGHT // 8
-
-    run = True
-    while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            if event.type == pygame.MOUSEMOTION:
-                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
-                        text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
-                    color_play = (50, 125, 50)
-                else:
-                    color_play = (100, 255, 100)
-                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
-                        text_y_quit <= event.pos[1] <= text_y_quit + text_quit.get_height():
-                    color_quit = (50, 125, 50)
-                else:
-                    color_quit = (100, 255, 100)
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if text_x <= event.pos[0] <= text_x + text_play.get_width() and\
-                        text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
-                    return
-                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
-                        text_y_quit <= event.pos[1] <= text_y_quit + text_quit.get_height():
-                    terminate()
-
-        text_play = font.render("Play", True, color_play)
-        text_quit = font.render("Quit", True, color_quit)
-        screen.blit(text_play, (text_x, text_y_play))
-        screen.blit(text_quit, (text_x, text_y_quit))
-        clock.tick(FPS)
-        pygame.display.flip()
+class Question(pygame.sprite.Sprite):
+    def __init__(self, s_x, s_y, *group):
+        super().__init__(*group)
 
 
-start_window()
+class Level(pygame.sprite.Sprite):
+    def __init__(self, pers_x, pers_y, map_name, image, *group, ready=False):
+        super().__init__(*group)
 
+        self.image = pygame.transform.scale(load_image(image, 'data'), (WIDTH // 30, WIDTH // 30))
+        self.rect = pygame.rect.Rect(0, 0, *self.image.get_size())
 
-class Level:
-    def __init__(self, pers_x, pers_y, map_name):
-        screen.fill((0, 0, 0))
         self.running = True
         self.alp = 0
-        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png'))
+        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png', 'data'))
         self.tiles = load_level(map_name)
         self.end_of_level = self.tiles.width * TILE_WIDTH
         self.height_of_level = self.tiles.height * TILE_HEIGHT
@@ -83,10 +45,14 @@ class Level:
         self.enemies = []
         for i in range(1):
             self.enemies.append(
-                Enemy(enemies_sprites, load_image('pers.png'), (self.end_of_level, self.height_of_level)))
-        self.interface = InfoInterface(load_image('coin.png'))
+                Enemy(enemies_sprites, load_image('pers.png', 'data'), (self.end_of_level, self.height_of_level)))
+        self.interface = InfoInterface(load_image('coin.png', 'data'))
+
+        self.ready = ready
+        self.passed = False
 
     def run(self):
+        pygame.mouse.set_visible(True)
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -135,10 +101,12 @@ class Level:
             clock.tick(FPS)
             self.interface.update_info(self.pers.health, self.pers.coins_count)
             self.pers.run()
-            all_sprites.update(self.pers)
+            all_sprites_lbl.update(self.pers)
             self.drawing()
             pygame.display.flip()
-        pygame.quit()
+
+        pygame.mouse.set_visible(False)
+        return self.pers.coins_count
 
     def generate_level(self, level):
         x, y = None, None
@@ -155,9 +123,9 @@ class Level:
 
     def drawing(self):
         self.camera.update(self.pers)
-        for sprite in all_sprites:
+        for sprite in all_sprites_lbl:
             self.camera.apply(sprite)
-        all_sprites.draw(screen)
+        all_sprites_lbl.draw(screen)
         # обновляем положение интерфейса относительно персонажа
         if self.camera.cam_on:
             self.interface.update((self.pers.rect.x, self.pers.rect.y))
@@ -194,7 +162,3 @@ class Level:
                     error_stop = True
         if not error_stop:
             self.running = False
-
-
-x = Level(80, 400, 'map3.tmx')
-x.run()
