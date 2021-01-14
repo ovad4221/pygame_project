@@ -96,7 +96,7 @@ def restart_window():
                 if text_x_restart <= event.pos[0] <= text_x_restart + text_restart.get_width() and\
                         text_y_restart <= event.pos[1] <= text_y_restart + text_restart.get_height():
                     return
-                if text_x_back <= event.pos[0] <= text_x_back + text_restart.get_width() and \
+                if text_x_back <= event.pos[0] <= text_x_back + text_back.get_width() and \
                         text_y_back <= event.pos[1] <= text_y_back + text_back.get_height():
                     return start_window()
 
@@ -134,7 +134,7 @@ class Level:
         screen.fill((0, 0, 0))
         self.running = True
         self.alp = 0
-        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png'), Weapon())
+        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png'), 5, 2, Weapon())
         self.tiles = load_level(map_name)
         self.end_of_level = self.tiles.width * TILE_WIDTH
         self.height_of_level = self.tiles.height * TILE_HEIGHT
@@ -145,7 +145,7 @@ class Level:
         self.enemies = []
         for i in range(1):
             self.enemies.append(
-                Enemy(enemies_sprites, load_image('pers.png'), (self.end_of_level, self.height_of_level)))
+                Enemy(enemies_sprites, load_image('pirat.png'), 5, 2, (self.end_of_level, self.height_of_level)))
         self.interface = InfoInterface(load_image('coin.png'))
 
     def run(self):
@@ -156,7 +156,7 @@ class Level:
                 if event.type == pygame.KEYDOWN:
                     # d down
                     if event.key == pygame.K_d:
-                        self.pers.right_ran = True
+                        self.pers.right_run = True
                     # a down
                     elif event.key == pygame.K_a:
                         self.pers.left_run = True
@@ -175,7 +175,7 @@ class Level:
                 if event.type == pygame.KEYUP:
                     # d up
                     if event.key == pygame.K_d:
-                        self.pers.right_ran = False
+                        self.pers.right_run = False
                     # a up
                     elif event.key == pygame.K_a:
                         self.pers.left_run = False
@@ -198,7 +198,7 @@ class Level:
             self.pers.run()
             all_sprites.update(self.pers)
             self.drawing()
-            if self.pers.health <= 0:
+            if self.pers.game_over:
                 game_over()
                 restart_window()
                 self.restart_level()
