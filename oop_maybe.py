@@ -15,7 +15,7 @@ class Person(pygame.sprite.Sprite):
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.mask = pygame.mask.from_surface(self.image)
-        self.speed = 3
+        self.speed = PERS_SPEED
         self.jump_v = 0
         self.g = 0.05
         # jump_count чтобы нельзя было несколько раз подряд прыгать, и для реализации двойных прыжков
@@ -323,7 +323,7 @@ class Weapon:
         self.chance_critic = chance_critic
 
     def kick(self, owner, pos):
-        if len(bullet_sprites) < 10:
+        if len(bullet_sprites) < MAX_BULLETS_SHOOTED:
             Bullet(owner.rect.x + owner.rect.width // 2, owner.rect.y + 10, pos[0], pos[1], owner, PERS_DAMAGE)
 
     def mega_kick_1(self):
@@ -379,7 +379,7 @@ class InfoInterface(pygame.sprite.Sprite):
         self.rect.x = pos[0] - WIDTH // 2 + 28
         self.rect.y = pos[1] - HEIGHT // 2 + 42
 
-    def update_info(self, health, coin_count):
+    def update_info(self, health, coin_count, enemies_left):
         self.image.fill(pygame.Color('black'))
         self.image.set_colorkey(self.image.get_at((0, 0)))
         self.image.blit(self.coin_img, (self.rect.width - self.rect.width // 10,
@@ -391,6 +391,12 @@ class InfoInterface(pygame.sprite.Sprite):
         font = pygame.font.Font(None, 50)
         text = font.render(f"{coin_count}", True, (100, 255, 100))
         text_x = self.rect.width - self.rect.width // 30 - text.get_width()
+        text_y = self.rect.height // 2 - text.get_height() // 2
+        self.image.blit(text, (text_x, text_y))
+
+        font = pygame.font.Font(None, 50)
+        text = font.render(f"Осталось врагов: {enemies_left}", True, (100, 255, 100))
+        text_x = self.rect.width - self.rect.width // 2 - text.get_width() // 2
         text_y = self.rect.height // 2 - text.get_height() // 2
         self.image.blit(text, (text_x, text_y))
 
