@@ -6,7 +6,7 @@ from constans import *
 
 class Person(pygame.sprite.Sprite):
     def __init__(self, group, sheet, columns, rows):
-        super().__init__(all_sprites, group)
+        super().__init__(all_sprites_lbl, group)
         self.width = int(40 * (WIDTH / 1366))
         self.height = int(60 * (HEIGHT / 768))
         # self.image = pygame.transform.scale(image, (self.width, self.height))
@@ -89,7 +89,7 @@ class Person(pygame.sprite.Sprite):
 
 class Log(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, image, tile_type=1):
-        super().__init__(logs_sprites, all_sprites)
+        super().__init__(logs_sprites, all_sprites_lbl)
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.tile_type = tile_type
@@ -101,7 +101,7 @@ class Log(pygame.sprite.Sprite):
 
 class Coin(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, image):
-        super().__init__(coins_sprites, all_sprites)
+        super().__init__(coins_sprites, all_sprites_lbl)
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.image = image
@@ -239,7 +239,7 @@ class Enemy(Person):
 # пуля
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, cursor_x, cursor_y, owner, damage):
-        super().__init__(all_sprites, bullet_sprites)
+        super().__init__(all_sprites_lbl, bullet_sprites)
         self.image = pygame.Surface((10, 10))
         pygame.draw.circle(self.image, pygame.Color('yellow'), (5, 5), 5)
         self.image.set_colorkey(self.image.get_at((0, 0)))
@@ -284,7 +284,7 @@ class Bullet(pygame.sprite.Sprite):
 # шкала здоровья врагов
 class HealthScale(pygame.sprite.Sprite):
     def __init__(self, owner):
-        super().__init__(all_sprites, health_scale_sprites)
+        super().__init__(all_sprites_lbl, health_scale_sprites)
         self.image = pygame.Surface((int(0.8 * owner.rect.width), int(0.08 * owner.rect.height)))
         self.rect = self.image.get_rect()
         self.rect.x = owner.rect.x

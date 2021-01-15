@@ -109,7 +109,7 @@ def restart_window():
 
 
 def game_over():
-    img = load_image('gameover.jpg')
+    img = load_image('gameover.jpg', 'data')
     x = WIDTH // 2 - img.get_width() // 2
     y = HEIGHT // 2 - img.get_height() // 2
     run = True
@@ -134,15 +134,25 @@ class Question(pygame.sprite.Sprite):
 
 
 class Level(pygame.sprite.Sprite):
-    def __init__(self, pers_x, pers_y, map_name, image, *group, ready=False):
-        super().__init__(*group)
+    def __init__(self, pers_x, pers_y, map_name, image, group, ready=False):
+        super().__init__(group)
 
         self.image = pygame.transform.scale(load_image(image, 'data'), (WIDTH // 30, WIDTH // 30))
         self.rect = pygame.rect.Rect(0, 0, *self.image.get_size())
-        self.default_parameters = (pers_x, pers_y, map_name)
+        self.default_parameters = (pers_x, pers_y, map_name, image, group, ready)
+
+        self.pers_x = pers_x
+        self.pers_y = pers_y
+        self.map_name = map_name
+
+        self.ready = ready
+        self.passed = False
+        self.win = False
+
+    def create(self):
         self.running = True
-        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png'), 5, 2, Weapon())
-        self.tiles = load_level(map_name)
+        self.pers = Hero(self.pers_x, self.pers_y, pers_sprites, load_image('pers.png', 'data'), 5, 2, Weapon())
+        self.tiles = load_level(self.map_name)
         self.end_of_level = self.tiles.width * TILE_WIDTH
         self.height_of_level = self.tiles.height * TILE_HEIGHT
         self.logs = []
@@ -152,11 +162,9 @@ class Level(pygame.sprite.Sprite):
         self.enemies = []
         for i in range(1):
             self.enemies.append(
-                Enemy(enemies_sprites, load_image('pirat.png'), 5, 2, (self.end_of_level, self.height_of_level)))
-        self.interface = InfoInterface(load_image('coin.png'))
-
-        self.ready = ready
-        self.passed = False
+                Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2, (self.end_of_level, self.height_of_level)))
+        self.interface = InfoInterface(load_image('coin.png', 'data'))
+        self.enemy_count = len(enemies_sprites)
 
     def run(self):
         pygame.mouse.set_visible(True)
@@ -167,7 +175,7 @@ class Level(pygame.sprite.Sprite):
                 if event.type == pygame.KEYDOWN:
                     # d down
                     if event.key == pygame.K_d:
-                        self.pers.right_ran = True
+                        self.pers.right_run = True
                     # a down
                     elif event.key == pygame.K_a:
                         self.pers.left_run = True
@@ -186,7 +194,7 @@ class Level(pygame.sprite.Sprite):
                 if event.type == pygame.KEYUP:
                     # d up
                     if event.key == pygame.K_d:
-                        self.pers.right_ran = False
+                        self.pers.right_run = False
                     # a up
                     elif event.key == pygame.K_a:
                         self.pers.left_run = False
@@ -207,14 +215,19 @@ class Level(pygame.sprite.Sprite):
             clock.tick(FPS)
             self.interface.update_info(self.pers.health, self.pers.coins_count)
             self.pers.run()
-            # all_sprites_lbl.update(self.pers)
+            all_sprites_lbl.update(self.pers)
             if self.pers.game_over:
                 game_over()
                 restart_window()
                 self.restart_level()
             self.drawing()
             pygame.display.flip()
-
+            if self.enemy_count == 0:
+                self.win = True
+                # окно победы, собранные очки
+                self.stop_level()
+                self.running = False
+            self.enemy_count = len(enemies_sprites)
         pygame.mouse.set_visible(False)
         return self.pers.coins_count
 
@@ -247,6 +260,11 @@ class Level(pygame.sprite.Sprite):
                 item.kill()
         self.__init__(*self.default_parameters)
 
+    def stop_level(self):
+        for group in SPRITE_GROUPS:
+            for item in group:
+                item.kill()
+
     def stop_run(self):
         font1 = pygame.font.Font(None, 50 * int(HEIGHT * WIDTH / (1366 * 768)))
         font2 = pygame.font.Font(None, 30 * int(HEIGHT * WIDTH / (1366 * 768)))
@@ -272,6 +290,7 @@ class Level(pygame.sprite.Sprite):
                 # y
                 if event.key == pygame.K_y:
                     to_run = False
+                    self.stop_level()
                 # n
                 elif event.key == pygame.K_n:
                     to_run = False

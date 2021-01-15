@@ -6,7 +6,7 @@ HEIGHT = windll.user32.GetSystemMetrics(1)
 FPS = 100
 
 # sprite groups
-all_sprites = pygame.sprite.Group()
+all_sprites_lbl = pygame.sprite.Group()
 pers_sprites = pygame.sprite.Group()
 logs_sprites = pygame.sprite.Group()
 enemies_sprites = pygame.sprite.Group()
@@ -14,7 +14,7 @@ coins_sprites = pygame.sprite.Group()
 interface_sprite = pygame.sprite.Group()
 bullet_sprites = pygame.sprite.Group()
 health_scale_sprites = pygame.sprite.Group()
-SPRITE_GROUPS = [all_sprites, pers_sprites, logs_sprites,
+SPRITE_GROUPS = [all_sprites_lbl, pers_sprites, logs_sprites,
                  enemies_sprites, coins_sprites, interface_sprite,
                  bullet_sprites, health_scale_sprites]
 

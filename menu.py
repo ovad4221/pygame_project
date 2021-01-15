@@ -91,8 +91,9 @@ if __name__ == '__main__':
 
         if level:
             if pygame.key.get_pressed()[pygame.K_p] and level.ready:
+                level.create()
                 rules.count_of_coins += level.run()
-                if len(board.level_list) - 1 != board.level_list.index(level):
+                if len(board.level_list) - 1 != board.level_list.index(level) and level.win:
                     board.level_list[board.level_list.index(level) + 1].ready = True
                 clock.tick()
                 board.pers.all_flags_move_false()
