@@ -169,6 +169,7 @@ if __name__ == '__main__':
                 channel1.play(level.sound, loops=1)
             if pygame.key.get_pressed()[pygame.K_p] and level.ready and not level.passed:
                 channel1.pause()
+                # level.restart_level()
                 level.create()
                 rules.count_of_coins += level.run()
                 channel1.unpause()
