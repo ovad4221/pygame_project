@@ -20,50 +20,6 @@ def terminate():
     sys.exit()
 
 
-def restart_window():
-    screen.fill(BLACK)
-    color_restart = BUTTON_COLOR
-    color_back = BUTTON_COLOR
-    font = pygame.font.Font(None, 150)
-    text_restart = font.render("Restart", True, color_restart)
-    text_back = font.render("Back to menu", True, color_back)
-    text_x_restart = WIDTH // 2 - text_restart.get_width() // 2
-    text_x_back = WIDTH // 2 - text_back.get_width() // 2
-    text_y_restart = HEIGHT // 2 - text_restart.get_height() // 2 - HEIGHT // 8
-    text_y_back = HEIGHT // 2 - text_back.get_height() // 2 + HEIGHT // 8
-
-    run = True
-    while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            if event.type == pygame.MOUSEMOTION:
-                if text_x_restart <= event.pos[0] <= text_x_restart + text_restart.get_width() and \
-                        text_y_restart <= event.pos[1] <= text_y_restart + text_restart.get_height():
-                    color_restart = ACTIVE_COLOR
-                else:
-                    color_restart = BUTTON_COLOR
-                if text_x_back <= event.pos[0] <= text_x_back + text_back.get_width() and \
-                        text_y_back <= event.pos[1] <= text_y_back + text_back.get_height():
-                    color_back = ACTIVE_COLOR
-                else:
-                    color_back = BUTTON_COLOR
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if text_x_restart <= event.pos[0] <= text_x_restart + text_restart.get_width() and\
-                        text_y_restart <= event.pos[1] <= text_y_restart + text_restart.get_height():
-                    return
-                if text_x_back <= event.pos[0] <= text_x_back + text_back.get_width() and \
-                        text_y_back <= event.pos[1] <= text_y_back + text_back.get_height():
-                    return start_window()
-
-        text_restart = font.render("Restart", True, color_restart)
-        text_back = font.render("Back to menu", True, color_back)
-        screen.blit(text_restart, (text_x_restart, text_y_restart))
-        screen.blit(text_back, (text_x_back, text_y_back))
-        clock.tick(FPS)
-        pygame.display.flip()
-
-
 def game_over():
     img = load_image('gameover.jpg', 'data')
     x = WIDTH // 2 - img.get_width() // 2
@@ -173,8 +129,7 @@ class Level(pygame.sprite.Sprite):
             all_sprites_lbl.update(self.pers)
             if self.pers.game_over:
                 game_over()
-                restart_window()
-                self.restart_level()
+                self.stop_level()
             self.drawing()
             pygame.display.flip()
             if self.enemy_count == 0:

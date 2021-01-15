@@ -96,6 +96,7 @@ def start_window():
 
 
 if __name__ == '__main__':
+    pygame.mixer.pre_init(44100, -16, 1, 512)
     pygame.init()
     pygame.display.set_caption('Решение')
     size = WIDTH, HEIGHT
@@ -116,7 +117,6 @@ if __name__ == '__main__':
     Barier(board.left, board.top, board.w_n * board.cell_size, board.h_n * board.cell_size, True, True, all_sprites,
            bar_sprites)
     camera = Camera(board.pers.rect.x, board.pers.rect.y)
-    pygame.mouse.set_visible(False)
     clock = pygame.time.Clock()
     running = True
     level = None
