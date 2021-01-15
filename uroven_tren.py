@@ -92,6 +92,11 @@ class Level(pygame.sprite.Sprite):
         super().__init__(*group)
 
         self.image = pygame.transform.scale(load_image(image, 'data'), (WIDTH // 20, WIDTH // 20))
+        self.ok_marc = pygame.transform.scale(load_image('галочка.png', 'data'), (WIDTH // 50, WIDTH // 50))
+        self.target = pygame.transform.scale(load_image('target.png', 'data'), (WIDTH // 50, WIDTH // 50))
+        self.screen_with_ok = pygame.Surface([*self.image.get_size()])
+        self.screen_with_ok.blit(self.image, (0, 0))
+
         self.rect = pygame.rect.Rect(0, 0, *self.image.get_size())
         self.default_parameters = (pers_x, pers_y, map_name, image, group, ready)
 
@@ -173,14 +178,15 @@ class Level(pygame.sprite.Sprite):
             self.interface.update_info(self.pers.health, self.pers.coins_count)
             self.pers.run()
             all_sprites_lbl.update(self.pers)
-            if self.pers.game_over:
-                game_over()
-                self.stop_level()
             self.drawing()
             pygame.display.flip()
             if self.enemy_count == 0:
                 self.passed = True
                 # окно победы, собранные очки
+                self.stop_level()
+                self.running = False
+            if self.pers.game_over:
+                game_over()
                 self.stop_level()
                 self.running = False
             self.enemy_count = len(enemies_sprites)
@@ -256,3 +262,11 @@ class Level(pygame.sprite.Sprite):
                     error_stop = True
         if not error_stop:
             self.running = False
+
+    def update(self, a, b):
+        if self.passed:
+            self.screen_with_ok.blit(self.ok_marc, (0, 0))
+            self.image = self.screen_with_ok
+        elif self.ready:
+            self.screen_with_ok.blit(self.target, (0, 0))
+            self.image = self.screen_with_ok

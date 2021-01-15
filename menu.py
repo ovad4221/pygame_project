@@ -131,22 +131,22 @@ if __name__ == '__main__':
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
-                elif event.key == pygame.K_w:
+                elif event.key == pygame.K_w or event.key == pygame.K_UP:
                     board.pers.up_run = True
-                elif event.key == pygame.K_s:
+                elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     board.pers.down_run = True
-                elif event.key == pygame.K_a:
+                elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     board.pers.left_run = True
-                elif event.key == pygame.K_d:
+                elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     board.pers.right_run = True
             elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_w:
+                if event.key == pygame.K_w or event.key == pygame.K_UP:
                     board.pers.up_run = False
-                elif event.key == pygame.K_s:
+                elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     board.pers.down_run = False
-                elif event.key == pygame.K_a:
+                elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     board.pers.left_run = False
-                elif event.key == pygame.K_d:
+                elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     board.pers.right_run = False
         all_sprites.update(clock.tick(FPS), channel2)
         camera.update(board.pers)
