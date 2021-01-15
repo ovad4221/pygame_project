@@ -104,6 +104,9 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     screen.fill((0, 0, 0))
     rules = Roles()
+    font = pygame.font.Font(None, 100)
+    text_winner1 = font.render("Вы прошли игру, поздравляю!", True, (255, 204, 0))
+    text_winner2 = font.render("Спасибо за прохождение!", True, (255, 204, 0))
     board = Board('map-obj.txt', load_image)
     board.render(screen)
     for i in level_sprites:
@@ -181,6 +184,10 @@ if __name__ == '__main__':
         board.render(screen)
         all_sprites.draw(screen)
         screen.blit(rules.print_rules(), (WIDTH // 60, HEIGHT // 60))
+
+        if sum([i.passed for i in level_sprites]) == len(level_sprites):
+            screen.blit(text_winner1, (WIDTH // 3.5, HEIGHT // 30))
+            screen.blit(text_winner2, (WIDTH // 3.5, HEIGHT // 30 + text_winner1.get_height()))
         pygame.display.flip()
         screen.fill((0, 0, 0))
     pygame.quit()

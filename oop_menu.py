@@ -7,6 +7,11 @@ from random import randint
 import json
 
 
+class Chop(pygame.sprite.Sprite):
+    def __init__(self, *group):
+        super().__init__(*group)
+
+
 class Barier(pygame.sprite.Sprite):
     def __init__(self, x0, y0, w, h, horizontal, rev, *group):
         super().__init__(*group)
@@ -54,7 +59,7 @@ class Camera:
 
 
 class WarShipOrPig(pygame.sprite.Sprite):
-    def __init__(self, x, y, cell_size, *group):
+    def __init__(self, x, y, cell_size, number_of_skin, *group):
         super().__init__(*group)
 
         self.sound_water = pygame.mixer.Sound(os.path.join('sounds', 'бульк.wav'))
@@ -63,83 +68,88 @@ class WarShipOrPig(pygame.sprite.Sprite):
 
         self.change = 0
 
-        self.im_pictures = [pygame.transform.scale(load_image('boat_up1.png', 'data_menu'), (cell_size, cell_size)),
-                            pygame.transform.scale(load_image('boat_up2.png', 'data_menu'), (cell_size, cell_size)),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_up1.png', 'data_menu'), (cell_size, cell_size)),
-                                False,
-                                True),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_up2.png', 'data_menu'), (cell_size, cell_size)),
-                                False,
-                                True),
-                            pygame.transform.scale(load_image('boat_ri1.png', 'data_menu'), (cell_size, cell_size)),
-                            pygame.transform.scale(load_image('boat_ri2.png', 'data_menu'), (cell_size, cell_size)),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_ri1.png', 'data_menu'), (cell_size, cell_size)),
-                                True,
-                                False),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_ri2.png', 'data_menu'), (cell_size, cell_size)),
-                                True,
-                                False),
-                            pygame.transform.scale(load_image('horse_ri.png', 'data_menu'), (cell_size, cell_size)),
-                            pygame.transform.scale(load_image('horse_up.png', 'data_menu'), (cell_size, cell_size)),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('horse_up.png', 'data_menu'), (cell_size, cell_size)),
-                                False,
-                                True),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('horse_ri.png', 'data_menu'), (cell_size, cell_size)),
-                                True,
-                                False),
+        self.im_pictures = [
+            pygame.transform.scale(load_image(f'boat_up{number_of_skin}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.scale(load_image(f'boat_up{number_of_skin + 1}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_up{number_of_skin}.png', 'data_menu'), (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_up{number_of_skin + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.scale(load_image(f'boat_ri{number_of_skin}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.scale(load_image(f'boat_ri{number_of_skin + 1}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_ri{number_of_skin}.png', 'data_menu'), (cell_size, cell_size)),
+                True,
+                False),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_ri{number_of_skin + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
+            pygame.transform.scale(load_image(f'horse_ri{number_of_skin}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.scale(load_image(f'horse_up{number_of_skin}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_up{number_of_skin}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_ri{number_of_skin}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
 
-                            pygame.transform.scale(load_image('boat_diri1.png', 'data_menu'), (cell_size, cell_size)),
-                            pygame.transform.scale(load_image('boat_diri2.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.scale(load_image(f'boat_diri{number_of_skin}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.scale(load_image(f'boat_diri{number_of_skin + 1}.png', 'data_menu'), (cell_size, cell_size)),
 
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_diri1.png', 'data_menu'),
-                                                       (cell_size, cell_size)),
-                                False,
-                                True),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_diri2.png', 'data_menu'),
-                                                       (cell_size, cell_size)),
-                                False,
-                                True),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{number_of_skin}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{number_of_skin + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
 
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_diri1.png', 'data_menu'),
-                                                       (cell_size, cell_size)),
-                                True,
-                                False),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_diri2.png', 'data_menu'),
-                                                       (cell_size, cell_size)),
-                                True,
-                                False),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{number_of_skin}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{number_of_skin + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
 
-                            pygame.transform.flip(pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_diri1.png', 'data_menu'),
-                                                       (cell_size, cell_size)), False, True), True, False),
-                            pygame.transform.flip(pygame.transform.flip(
-                                pygame.transform.scale(load_image('boat_diri2.png', 'data_menu'),
-                                                       (cell_size, cell_size)), False, True), True, False),
+            pygame.transform.flip(pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{number_of_skin}.png', 'data_menu'),
+                                       (cell_size, cell_size)), False, True), True, False),
+            pygame.transform.flip(pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{number_of_skin + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)), False, True), True, False),
 
-                            pygame.transform.scale(load_image('horse_diri.png', 'data_menu'), (cell_size, cell_size)),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('horse_diri.png', 'data_menu'),
-                                                       (cell_size, cell_size)),
-                                True,
-                                False),
-                            pygame.transform.flip(
-                                pygame.transform.scale(load_image('horse_diri.png', 'data_menu'),
-                                                       (cell_size, cell_size)),
-                                False,
-                                True),
-                            pygame.transform.flip(pygame.transform.flip(
-                                pygame.transform.scale(load_image('horse_diri.png', 'data_menu'),
-                                                       (cell_size, cell_size)), False, True), True, False)]
+            pygame.transform.scale(load_image(f'horse_diri{number_of_skin}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_diri{number_of_skin}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_diri{number_of_skin}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.flip(pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_diri{number_of_skin}.png', 'data_menu'),
+                                       (cell_size, cell_size)), False, True), True, False)]
         self.image = self.im_pictures[0]
         self.rect = pygame.rect.Rect(x, y, cell_size, cell_size)
 
@@ -296,7 +306,7 @@ class Board:
                     screen.blit(self.bereg, (x, y))
 
                 elif self.board[i][j] == 'X':
-                    self.pers = WarShipOrPig(x, y, self.cell_size)
+                    self.pers = WarShipOrPig(x, y, self.cell_size, 1)
                     self.board[i][j] = '>'
                 elif self.board[i][j].isdigit():
                     self.level_list[int(self.board[i][j]) - 1].rect.x = x
