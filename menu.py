@@ -75,18 +75,21 @@ def start_window():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.MOUSEMOTION:
+            elif event.type == pygame.MOUSEMOTION:
                 if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
                         text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
                     color_play = (50, 125, 50)
                 else:
                     color_play = (100, 255, 100)
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
                         text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
                     pygame.mixer.music.stop()
                     pygame.mixer.music.unload()
                     return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    run = False
         text_play = font.render("Play", True, color_play)
         screen.blit(text_play, (text_x, text_y_play))
         name_sprite.update()
@@ -116,7 +119,6 @@ if __name__ == '__main__':
     Barier(board.left, board.top, board.w_n * board.cell_size, board.h_n * board.cell_size, True, True, all_sprites,
            bar_sprites)
     camera = Camera(board.pers.rect.x, board.pers.rect.y)
-    pygame.mouse.set_visible(False)
     clock = pygame.time.Clock()
     running = True
     level = None

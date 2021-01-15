@@ -255,7 +255,7 @@ class Board:
         # json
         read_list = open('list_levels_j.json', 'r', encoding='utf-8').readline()
         read_list = json.loads(read_list)
-        self.level_list = [Level(int(i[0]), int(i[1]), i[2], i[3], i[4], level_sprites, ready=i[4]) for i in read_list]
+        self.level_list = [Level(int(i[0]), int(i[1]), i[2], i[3], i[4], level_sprites, ready=i[5]) for i in read_list]
 
         self.left = 0
         self.top = 0
