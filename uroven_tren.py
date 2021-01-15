@@ -20,50 +20,6 @@ def terminate():
     sys.exit()
 
 
-# тестовое стартовое меню
-def start_window():
-    screen.fill(BLACK)
-    color_play = BUTTON_COLOR
-    color_quit = BUTTON_COLOR
-    font = pygame.font.Font(None, 150)
-    text_play = font.render("Play", True, color_play)
-    text_quit = font.render("Quit", True, color_quit)
-    text_x = WIDTH // 2 - text_play.get_width() // 2
-    text_y_play = HEIGHT // 2 - text_play.get_height() // 2 - HEIGHT // 8
-    text_y_quit = HEIGHT // 2 - text_quit.get_height() // 2 + HEIGHT // 8
-
-    run = True
-    while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            if event.type == pygame.MOUSEMOTION:
-                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
-                        text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
-                    color_play = ACTIVE_COLOR
-                else:
-                    color_play = BUTTON_COLOR
-                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
-                        text_y_quit <= event.pos[1] <= text_y_quit + text_quit.get_height():
-                    color_quit = ACTIVE_COLOR
-                else:
-                    color_quit = BUTTON_COLOR
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if text_x <= event.pos[0] <= text_x + text_play.get_width() and\
-                        text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
-                    return
-                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
-                        text_y_quit <= event.pos[1] <= text_y_quit + text_quit.get_height():
-                    terminate()
-
-        text_play = font.render("Play", True, color_play)
-        text_quit = font.render("Quit", True, color_quit)
-        screen.blit(text_play, (text_x, text_y_play))
-        screen.blit(text_quit, (text_x, text_y_quit))
-        clock.tick(FPS)
-        pygame.display.flip()
-
-
 def restart_window():
     screen.fill(BLACK)
     color_restart = BUTTON_COLOR
@@ -125,17 +81,14 @@ def game_over():
         pygame.display.flip()
 
 
-# start_window()
-
-
 class Question(pygame.sprite.Sprite):
     def __init__(self, s_x, s_y, *group):
         super().__init__(*group)
 
 
 class Level(pygame.sprite.Sprite):
-    def __init__(self, pers_x, pers_y, map_name, image, group, ready=False):
-        super().__init__(group)
+    def __init__(self, pers_x, pers_y, map_name, image, sound, *group, ready=False):
+        super().__init__(*group)
 
         self.image = pygame.transform.scale(load_image(image, 'data'), (WIDTH // 30, WIDTH // 30))
         self.rect = pygame.rect.Rect(0, 0, *self.image.get_size())
@@ -144,6 +97,8 @@ class Level(pygame.sprite.Sprite):
         self.pers_x = pers_x
         self.pers_y = pers_y
         self.map_name = map_name
+
+        self.sound = pygame.mixer.Sound(os.path.join('sounds', sound))
 
         self.ready = ready
         self.passed = False
@@ -229,6 +184,7 @@ class Level(pygame.sprite.Sprite):
                 self.running = False
             self.enemy_count = len(enemies_sprites)
         pygame.mouse.set_visible(False)
+        self.passed = True
         return self.pers.coins_count
 
     def generate_level(self, level):

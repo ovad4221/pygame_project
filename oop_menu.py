@@ -2,6 +2,7 @@ import pygame
 from constants_of_menu import *
 from load_functions import load_image
 from uroven_tren import Level
+import os
 from random import randint
 import json
 
@@ -55,6 +56,13 @@ class Camera:
 class WarShipOrPig(pygame.sprite.Sprite):
     def __init__(self, x, y, cell_size, *group):
         super().__init__(*group)
+
+        self.sound_water = pygame.mixer.Sound(os.path.join('sounds', 'бульк.wav'))
+        self.sound_horse = pygame.mixer.Sound(os.path.join('sounds', 'horse.wav'))
+        self.sound_horse.set_volume(0.15)
+
+        self.change = 0
+
         self.im_pictures = [pygame.transform.scale(load_image('boat_up1.png', 'data_menu'), (cell_size, cell_size)),
                             pygame.transform.scale(load_image('boat_up2.png', 'data_menu'), (cell_size, cell_size)),
                             pygame.transform.flip(
@@ -143,6 +151,9 @@ class WarShipOrPig(pygame.sprite.Sprite):
 
         self.v = WIDTH // 11
 
+    def anyone(self):
+        return self.left_run or self.right_run or self.up_run or self.down_run
+
     def level_collide(self):
         return pygame.sprite.spritecollideany(self, level_sprites)
 
@@ -152,7 +163,7 @@ class WarShipOrPig(pygame.sprite.Sprite):
         self.up_run = False
         self.down_run = False
 
-    def update(self, time):
+    def update(self, time, channel):
         spr = pygame.sprite.spritecollide(self, bar_sprites, False)
         self.arr_collide = [-1, -1]
 
@@ -168,7 +179,6 @@ class WarShipOrPig(pygame.sprite.Sprite):
             self.rect.x += round(self.v * -1 * time / 1000)
             if not self.in_ground:
                 self.image = self.im_pictures[6 + self.ves_lo]
-                self.ves_lo = not self.ves_lo
             else:
                 self.image = self.im_pictures[11]
 
@@ -176,7 +186,6 @@ class WarShipOrPig(pygame.sprite.Sprite):
             self.rect.x += round(self.v * time / 1000)
             if not self.in_ground:
                 self.image = self.im_pictures[4 + self.ves_lo]
-                self.ves_lo = not self.ves_lo
             else:
                 self.image = self.im_pictures[8]
 
@@ -184,7 +193,6 @@ class WarShipOrPig(pygame.sprite.Sprite):
             self.rect.y += round(self.v * -1 * time / 1000)
             if not self.in_ground:
                 self.image = self.im_pictures[0 + self.ves_lo]
-                self.ves_lo = not self.ves_lo
             else:
                 self.image = self.im_pictures[9]
 
@@ -192,7 +200,6 @@ class WarShipOrPig(pygame.sprite.Sprite):
             self.rect.y += round(self.v * time / 1000)
             if not self.in_ground:
                 self.image = self.im_pictures[2 + self.ves_lo]
-                self.ves_lo = not self.ves_lo
             else:
                 self.image = self.im_pictures[10]
 
@@ -200,30 +207,34 @@ class WarShipOrPig(pygame.sprite.Sprite):
         if self.right_run and self.up_run and 'up' not in self.arr_collide and 'right' not in self.arr_collide:
             if not self.in_ground:
                 self.image = self.im_pictures[12 + self.ves_lo]
-                self.ves_lo = not self.ves_lo
             else:
                 self.image = self.im_pictures[20]
         # правая диагональка вниз
         elif self.right_run and self.down_run and 'down' not in self.arr_collide and 'right' not in self.arr_collide:
             if not self.in_ground:
                 self.image = self.im_pictures[14 + self.ves_lo]
-                self.ves_lo = not self.ves_lo
             else:
                 self.image = self.im_pictures[22]
         # левая диагональка вверх
         elif self.up_run and self.left_run and 'up' not in self.arr_collide and 'left' not in self.arr_collide:
             if not self.in_ground:
                 self.image = self.im_pictures[16 + self.ves_lo]
-                self.ves_lo = not self.ves_lo
             else:
                 self.image = self.im_pictures[21]
         # левая диагональка вниз
         elif self.down_run and self.left_run and 'down' not in self.arr_collide and 'left' not in self.arr_collide:
             if not self.in_ground:
                 self.image = self.im_pictures[18 + self.ves_lo]
-                self.ves_lo = not self.ves_lo
             else:
                 self.image = self.im_pictures[23]
+
+        if not self.change % 40:
+            self.ves_lo = not self.ves_lo
+            if not self.in_ground and self.anyone() and self.ves_lo:
+                channel.play(self.sound_water)
+            elif self.anyone() and self.in_ground:
+                channel.play(self.sound_horse)
+        self.change = (self.change + 1) % 40
 
 
 class Ground(pygame.sprite.Sprite):
@@ -244,7 +255,7 @@ class Board:
         # json
         read_list = open('list_levels_j.json', 'r', encoding='utf-8').readline()
         read_list = json.loads(read_list)
-        self.level_list = [Level(int(i[0]), int(i[1]), i[2], i[3], level_sprites, ready=i[4]) for i in read_list]
+        self.level_list = [Level(int(i[0]), int(i[1]), i[2], i[3], i[4], level_sprites, ready=i[4]) for i in read_list]
 
         self.left = 0
         self.top = 0
