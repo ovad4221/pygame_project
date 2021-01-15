@@ -1,4 +1,5 @@
 import pygame
+import sys
 from oop_menu import *
 from constants_of_menu import *
 
@@ -32,6 +33,69 @@ class Roles:
         return self.screen2
 
 
+class NameOfGame(pygame.sprite.Sprite):
+    def __init__(self, sheet, columns, rows, x, y):
+        super().__init__(name_sprite)
+        self.frames = []
+        self.cut_sheet(sheet, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(x, y)
+
+        self.change = 0
+
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
+                                sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
+
+    def update(self):
+        if not self.change % 100:
+            self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+            self.image = self.frames[self.cur_frame]
+        self.change = (self.change + 1) % 100
+
+
+def start_window():
+    screen.fill((0, 0, 0))
+    pygame.mixer.music.load(os.path.join('sounds', 'саундтрек.wav'))
+    color_play = (100, 255, 100)
+    font = pygame.font.Font(None, 300)
+    text_play = font.render("Play", True, color_play)
+    text_x = WIDTH // 2 - text_play.get_width() // 2
+    text_y_play = HEIGHT // 1.5 - text_play.get_height() // 2
+    image_name = load_image("заставка спрайты.png", 'data_menu')
+    NameOfGame(image_name, 2, 4, WIDTH // 2 - image_name.get_width() // 4, HEIGHT // 2 - image_name.get_height() // 2)
+    pygame.mixer.music.play(-1)
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEMOTION:
+                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
+                        text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
+                    color_play = (50, 125, 50)
+                else:
+                    color_play = (100, 255, 100)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
+                        text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.unload()
+                    return
+        text_play = font.render("Play", True, color_play)
+        screen.blit(text_play, (text_x, text_y_play))
+        name_sprite.update()
+        name_sprite.draw(screen)
+        clock.tick(FPS)
+        pygame.display.flip()
+
+
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Решение')
@@ -53,10 +117,15 @@ if __name__ == '__main__':
     Barier(board.left, board.top, board.w_n * board.cell_size, board.h_n * board.cell_size, True, True, all_sprites,
            bar_sprites)
     camera = Camera(board.pers.rect.x, board.pers.rect.y)
-    pygame.mouse.set_visible(False)
     clock = pygame.time.Clock()
     running = True
     level = None
+    start_window()
+    pygame.mouse.set_visible(False)
+    pygame.mixer.music.load(os.path.join('sounds', 'фон карты.wav'))
+    pygame.mixer.music.play(-1)
+    channel1 = pygame.mixer.Channel(0)
+    channel2 = pygame.mixer.Channel(1)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -81,21 +150,30 @@ if __name__ == '__main__':
                     board.pers.left_run = False
                 elif event.key == pygame.K_d:
                     board.pers.right_run = False
-        all_sprites.update(clock.tick(FPS))
+        all_sprites.update(clock.tick(FPS), channel2)
         camera.update(board.pers)
         board.left += camera.get_delta()[0]
         board.top += camera.get_delta()[1]
         for sprite in all_sprites:
             camera.apply(sprite)
         level = board.pers.level_collide()
-
         if level:
-            if pygame.key.get_pressed()[pygame.K_p] and level.ready:
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.pause()
+                channel1.play(level.sound, loops=1)
+            if pygame.key.get_pressed()[pygame.K_p] and level.ready and not level.passed:
+                channel1.pause()
                 rules.count_of_coins += level.run()
+                channel1.unpause()
                 if len(board.level_list) - 1 != board.level_list.index(level):
                     board.level_list[board.level_list.index(level) + 1].ready = True
                 clock.tick()
                 board.pers.all_flags_move_false()
+        else:
+            if channel1.get_busy():
+                channel1.stop()
+            if not pygame.mixer.music.get_busy():
+                pygame.mixer.music.unpause()
 
         board.render(screen)
         all_sprites.draw(screen)

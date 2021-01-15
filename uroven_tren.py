@@ -26,11 +26,13 @@ class Question(pygame.sprite.Sprite):
 
 
 class Level(pygame.sprite.Sprite):
-    def __init__(self, pers_x, pers_y, map_name, image, *group, ready=False):
+    def __init__(self, pers_x, pers_y, map_name, image, sound, *group, ready=False):
         super().__init__(*group)
 
         self.image = pygame.transform.scale(load_image(image, 'data'), (WIDTH // 30, WIDTH // 30))
         self.rect = pygame.rect.Rect(0, 0, *self.image.get_size())
+
+        self.sound = pygame.mixer.Sound(os.path.join('sounds', sound))
 
         self.running = True
         self.alp = 0
@@ -106,6 +108,7 @@ class Level(pygame.sprite.Sprite):
             pygame.display.flip()
 
         pygame.mouse.set_visible(False)
+        self.passed = True
         return self.pers.coins_count
 
     def generate_level(self, level):
