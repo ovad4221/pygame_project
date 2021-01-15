@@ -119,7 +119,7 @@ class Level(pygame.sprite.Sprite):
         self.generate_level(self.tiles)
         # создаем врагов
         self.enemies = []
-        for i in range(3):
+        for i in range(MAX_ENEMIES_ALIVE):
             self.enemies.append(
                 Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2, (0, self.end_of_level, 0, self.height_of_level)))
         self.interface = InfoInterface(load_image('coin.png', 'data'))
@@ -173,7 +173,7 @@ class Level(pygame.sprite.Sprite):
 
             screen.fill((0, 0, 0))
             clock.tick(FPS)
-            self.interface.update_info(self.pers.health, self.pers.coins_count)
+            self.interface.update_info(self.pers.health, self.pers.coins_count, self.max_enemy - self.dead_enemies)
             self.pers.run()
             all_sprites_lbl.update(self.pers)
             self.drawing()
@@ -190,8 +190,8 @@ class Level(pygame.sprite.Sprite):
 
             self.enemy_count = len(enemies_sprites)
 
-            self.dead_enemies += 3 - self.enemy_count
-            if self.dead_enemies < self.max_enemy and 3 - self.enemy_count > 0:
+            self.dead_enemies += MAX_ENEMIES_ALIVE - self.enemy_count
+            if self.dead_enemies < self.max_enemy and MAX_ENEMIES_ALIVE - self.enemy_count > 0:
                 self.enemies.append(
                     Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2,
                           (self.logs[0].rect.x, self.logs[0].rect.x + self.end_of_level,
