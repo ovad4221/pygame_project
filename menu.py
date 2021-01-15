@@ -73,9 +73,7 @@ def start_window():
     run = True
     while run:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-            elif event.type == pygame.MOUSEMOTION:
+            if event.type == pygame.MOUSEMOTION:
                 if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
                         text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
                     color_play = (50, 125, 50)
@@ -86,10 +84,11 @@ def start_window():
                         text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
                     pygame.mixer.music.stop()
                     pygame.mixer.music.unload()
-                    return
+                    return True
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     run = False
+                    return run
         text_play = font.render("Play", True, color_play)
         screen.blit(text_play, (text_x, text_y_play))
         name_sprite.update()
@@ -120,9 +119,8 @@ if __name__ == '__main__':
            bar_sprites)
     camera = Camera(board.pers.rect.x, board.pers.rect.y)
     clock = pygame.time.Clock()
-    running = True
     level = None
-    start_window()
+    running = start_window()
     pygame.mouse.set_visible(False)
     pygame.mixer.music.load(os.path.join('sounds', 'фон карты.wav'))
     pygame.mixer.music.play(-1)
@@ -130,9 +128,7 @@ if __name__ == '__main__':
     channel2 = pygame.mixer.Channel(1)
     while running:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
                 elif event.key == pygame.K_w:
@@ -172,7 +168,7 @@ if __name__ == '__main__':
                 level.create()
                 rules.count_of_coins += level.run()
                 channel1.unpause()
-                if len(board.level_list) - 1 != board.level_list.index(level) and level.win:
+                if len(board.level_list) - 1 != board.level_list.index(level) and level.passed:
                     board.level_list[board.level_list.index(level) + 1].ready = True
                 clock.tick()
                 board.pers.all_flags_move_false()

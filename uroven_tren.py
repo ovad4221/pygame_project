@@ -6,18 +6,12 @@ from oop_maybe import *
 from constans import *
 from load_functions import *
 
-
 # это лучше делать вне класса
 pygame.init()
 pygame.display.set_caption('Level')
 size = WIDTH, HEIGHT
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode(size)
-
-
-def terminate():
-    pygame.quit()
-    sys.exit()
 
 
 def game_over():
@@ -29,12 +23,63 @@ def game_over():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.MOUSEBUTTONDOWN or\
+            if event.type == pygame.MOUSEBUTTONDOWN or \
                     event.type == pygame.KEYDOWN:
                 return
         screen.fill(BLACK)
         screen.blit(img, (x, y))
         pygame.display.flip()
+
+
+def win_window(screen_p, coin_count, max_coin):
+    pygame.mouse.set_visible(True)
+    screen2 = pygame.Surface([WIDTH // 2, HEIGHT // 1.5])
+    screen2.fill((20, 20, 20))
+    color_text = (255, 204, 0)
+    font = pygame.font.Font(None, 180)
+    text_win = font.render("YOU WIN!", True, color_text)
+    font = pygame.font.Font(None, 50)
+    text_coin = font.render(f"+{coin_count}/{max_coin}!", True, color_text)
+    text_help = font.render("to exit tub anyone key", True, color_text)
+    image_star = pygame.transform.scale(load_image('star.png', 'data'), (screen2.get_width() // 3,
+                                                                         screen2.get_width() // 3))
+    image_coin = pygame.transform.scale(load_image('coin.png', 'data'), (text_coin.get_height(),
+                                                                         text_coin.get_height()))
+    star_int = 0
+
+    if 0 < coin_count <= max_coin // 3:
+        star_int = 1
+    elif max_coin // 3 < coin_count <= 2 * max_coin // 3:
+        star_int = 2
+    elif coin_count > 2 * max_coin // 3:
+        star_int = 3
+
+    for i in range(star_int):
+        if i == 0:
+            screen2.blit(pygame.transform.scale(pygame.transform.rotate(image_star, -45),
+                                                (screen2.get_width() // 3, screen2.get_width() // 3)),
+                         (0, screen2.get_height() // 6))
+        elif i == 1:
+            screen2.blit(image_star, (screen2.get_width() // 3, 0))
+        elif i == 2:
+            screen2.blit(pygame.transform.scale(pygame.transform.rotate(image_star, 45),
+                                                (screen2.get_width() // 3, screen2.get_width() // 3)),
+                         (screen2.get_width() * 2 // 3, screen2.get_height() // 6))
+
+    screen2.blit(text_win, (screen2.get_width() // 2 - text_win.get_width() // 2, screen2.get_width() // 2.6))
+    screen2.blit(text_coin, (screen2.get_width() // 2 - text_coin.get_width() // 2 - image_coin.get_width() // 2,
+                             screen2.get_width() // 2.6 + text_win.get_height()))
+    screen2.blit(image_coin, (screen2.get_width() // 2 + text_coin.get_width() // 2 - image_coin.get_width() // 2,
+                 screen2.get_width() // 2.6 + text_win.get_height()))
+    screen2.blit(text_help, (screen2.get_width() // 2 - text_help.get_width() // 2, screen2.get_height() // 1.1))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                pygame.mouse.set_visible(False)
+                return
+        clock.tick(FPS)
+        pygame.display.flip()
+        screen_p.blit(screen2, (WIDTH // 4, HEIGHT // 6))
 
 
 class Question(pygame.sprite.Sprite):
@@ -58,7 +103,6 @@ class Level(pygame.sprite.Sprite):
 
         self.ready = ready
         self.passed = False
-        self.win = False
 
     def create(self):
         self.running = True
@@ -73,11 +117,13 @@ class Level(pygame.sprite.Sprite):
         self.enemies = []
         for i in range(1):
             self.enemies.append(
-                Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2, (self.end_of_level, self.height_of_level)))
+                Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2,
+                      (self.end_of_level, self.height_of_level)))
         self.interface = InfoInterface(load_image('coin.png', 'data'))
         self.enemy_count = len(enemies_sprites)
 
     def run(self):
+        max_coin = len(coins_sprites)
         pygame.mouse.set_visible(True)
         while self.running:
             for event in pygame.event.get():
@@ -133,14 +179,16 @@ class Level(pygame.sprite.Sprite):
             self.drawing()
             pygame.display.flip()
             if self.enemy_count == 0:
-                self.win = True
+                self.passed = True
                 # окно победы, собранные очки
                 self.stop_level()
                 self.running = False
             self.enemy_count = len(enemies_sprites)
         pygame.mouse.set_visible(False)
-        self.passed = True
-        return self.pers.coins_count
+        if self.passed:
+            win_window(screen, self.pers.coins_count, max_coin)
+            return self.pers.coins_count
+        return 0
 
     def generate_level(self, level):
         x, y = None, None

@@ -128,11 +128,13 @@ class WarShipOrPig(pygame.sprite.Sprite):
 
                             pygame.transform.scale(load_image('horse_diri.png', 'data_menu'), (cell_size, cell_size)),
                             pygame.transform.flip(
-                                pygame.transform.scale(load_image('horse_diri.png', 'data_menu'), (cell_size, cell_size)),
+                                pygame.transform.scale(load_image('horse_diri.png', 'data_menu'),
+                                                       (cell_size, cell_size)),
                                 True,
                                 False),
                             pygame.transform.flip(
-                                pygame.transform.scale(load_image('horse_diri.png', 'data_menu'), (cell_size, cell_size)),
+                                pygame.transform.scale(load_image('horse_diri.png', 'data_menu'),
+                                                       (cell_size, cell_size)),
                                 False,
                                 True),
                             pygame.transform.flip(pygame.transform.flip(
@@ -204,25 +206,29 @@ class WarShipOrPig(pygame.sprite.Sprite):
                 self.image = self.im_pictures[10]
 
         # правая диагональка вверх
-        if self.right_run and self.up_run and 'up' not in self.arr_collide and 'right' not in self.arr_collide:
+        if self.right_run and self.up_run and not self.left_run and not self.down_run and \
+                'up' not in self.arr_collide and 'right' not in self.arr_collide:
             if not self.in_ground:
                 self.image = self.im_pictures[12 + self.ves_lo]
             else:
                 self.image = self.im_pictures[20]
         # правая диагональка вниз
-        elif self.right_run and self.down_run and 'down' not in self.arr_collide and 'right' not in self.arr_collide:
+        elif self.right_run and self.down_run and not self.left_run and not self.up_run and \
+                'down' not in self.arr_collide and 'right' not in self.arr_collide:
             if not self.in_ground:
                 self.image = self.im_pictures[14 + self.ves_lo]
             else:
                 self.image = self.im_pictures[22]
         # левая диагональка вверх
-        elif self.up_run and self.left_run and 'up' not in self.arr_collide and 'left' not in self.arr_collide:
+        elif self.up_run and self.left_run and not self.right_run and not self.down_run and \
+                'up' not in self.arr_collide and 'left' not in self.arr_collide:
             if not self.in_ground:
                 self.image = self.im_pictures[16 + self.ves_lo]
             else:
                 self.image = self.im_pictures[21]
         # левая диагональка вниз
-        elif self.down_run and self.left_run and 'down' not in self.arr_collide and 'left' not in self.arr_collide:
+        elif self.down_run and self.left_run and not self.right_run and not self.up_run and \
+                'down' not in self.arr_collide and 'left' not in self.arr_collide:
             if not self.in_ground:
                 self.image = self.im_pictures[18 + self.ves_lo]
             else:
