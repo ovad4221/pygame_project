@@ -15,7 +15,7 @@ class Person(pygame.sprite.Sprite):
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.mask = pygame.mask.from_surface(self.image)
-        self.speed = 3
+        self.speed = 6
         self.jump_v = 0
         self.g = 0.05
         # jump_count чтобы нельзя было несколько раз подряд прыгать, и для реализации двойных прыжков

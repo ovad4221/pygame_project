@@ -84,11 +84,6 @@ def win_window(screen_p, coin_count, max_coin):
         screen_p.blit(screen2, (WIDTH // 4, HEIGHT // 6))
 
 
-class Question(pygame.sprite.Sprite):
-    def __init__(self, s_x, s_y, *group):
-        super().__init__(*group)
-
-
 class Level(pygame.sprite.Sprite):
     def __init__(self, pers_x, pers_y, map_name, image, sound, *group, ready=False):
         super().__init__(*group)
@@ -202,7 +197,7 @@ class Level(pygame.sprite.Sprite):
                           (self.logs[0].rect.x, self.logs[0].rect.x + self.end_of_level,
                            self.logs[0].rect.y, self.logs[0].rect.y + self.height_of_level)))
 
-            print(len(enemies_sprites))
+
         pygame.mouse.set_visible(False)
         if self.passed:
             win_window(screen, self.pers.coins_count, max_coin)

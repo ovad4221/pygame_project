@@ -3,11 +3,10 @@ from constants_of_menu import *
 from load_functions import load_image
 from uroven_tren import Level
 import os
-from random import randint
 import json
 
 
-class Chop(pygame.sprite.Sprite):
+class Shop(pygame.sprite.Sprite):
     def __init__(self, *group):
         super().__init__(*group)
 

@@ -34,7 +34,7 @@ PERIODICITY_OF_JUMP = 2000
 ENEMY_DAMAGE = 20
 
 # game parameters
-BULLET_SPEED = 10
+BULLET_SPEED = 30
 
 # Colours
 BLACK = (0, 0, 0)

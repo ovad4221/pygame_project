@@ -108,6 +108,12 @@ if __name__ == '__main__':
     font = pygame.font.Font(None, 100)
     text_winner1 = font.render("Вы прошли игру, поздравляю!", True, (255, 204, 0))
     text_winner2 = font.render("Спасибо за прохождение!", True, (255, 204, 0))
+    font = pygame.font.Font(None, 30)
+    text_for_developers1 = font.render("Игру разработали:", True, (255, 204, 0))
+    text_for_developers_ovad = font.render("Овсянников Андрей;", True, (255, 204, 0))
+    text_for_developers_emil = font.render("Галимов Эмиль;", True, (255, 204, 0))
+    text_for_developers_anton = font.render("Петрин Антон.", True, (255, 204, 0))
+
     board = Board('map-obj.txt', load_image)
     board.render(screen)
     for i in level_sprites:
@@ -168,10 +174,8 @@ if __name__ == '__main__':
                 pygame.mixer.music.pause()
                 channel1.play(level.sound, loops=1)
             if pygame.key.get_pressed()[pygame.K_p] and level.ready and not level.passed:
-                channel1.pause()
                 level.create()
                 rules.count_of_coins += level.run()
-                channel1.unpause()
                 if len(board.level_list) - 1 != board.level_list.index(level) and level.passed:
                     board.level_list[board.level_list.index(level) + 1].ready = True
                 clock.tick()
@@ -189,6 +193,17 @@ if __name__ == '__main__':
         if sum([i.passed for i in level_sprites]) == len(level_sprites):
             screen.blit(text_winner1, (WIDTH // 3.5, HEIGHT // 30))
             screen.blit(text_winner2, (WIDTH // 3.5, HEIGHT // 30 + text_winner1.get_height()))
+
+            screen.blit(text_for_developers1,
+                        (WIDTH // 1.2, HEIGHT // 30 + text_winner1.get_height() * 2))
+            screen.blit(text_for_developers_ovad,
+                        (WIDTH // 1.2, HEIGHT // 30 + text_winner1.get_height() * 2 + text_for_developers1.get_height()))
+            screen.blit(text_for_developers_emil,
+                        (WIDTH // 1.2,
+                         HEIGHT // 30 + text_winner1.get_height() * 2 + text_for_developers1.get_height() * 2))
+            screen.blit(text_for_developers_anton,
+                        (WIDTH // 1.2,
+                         HEIGHT // 30 + text_winner1.get_height() * 2 + text_for_developers1.get_height() * 3))
         pygame.display.flip()
         screen.fill((0, 0, 0))
     pygame.quit()
