@@ -20,6 +20,114 @@ def terminate():
     sys.exit()
 
 
+# тестовое стартовое меню
+def start_window():
+    screen.fill(BLACK)
+    color_play = BUTTON_COLOR
+    color_quit = BUTTON_COLOR
+    font = pygame.font.Font(None, 150)
+    text_play = font.render("Play", True, color_play)
+    text_quit = font.render("Quit", True, color_quit)
+    text_x = WIDTH // 2 - text_play.get_width() // 2
+    text_y_play = HEIGHT // 2 - text_play.get_height() // 2 - HEIGHT // 8
+    text_y_quit = HEIGHT // 2 - text_quit.get_height() // 2 + HEIGHT // 8
+
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEMOTION:
+                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
+                        text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
+                    color_play = ACTIVE_COLOR
+                else:
+                    color_play = BUTTON_COLOR
+                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
+                        text_y_quit <= event.pos[1] <= text_y_quit + text_quit.get_height():
+                    color_quit = ACTIVE_COLOR
+                else:
+                    color_quit = BUTTON_COLOR
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if text_x <= event.pos[0] <= text_x + text_play.get_width() and\
+                        text_y_play <= event.pos[1] <= text_y_play + text_play.get_height():
+                    return
+                if text_x <= event.pos[0] <= text_x + text_play.get_width() and \
+                        text_y_quit <= event.pos[1] <= text_y_quit + text_quit.get_height():
+                    terminate()
+
+        text_play = font.render("Play", True, color_play)
+        text_quit = font.render("Quit", True, color_quit)
+        screen.blit(text_play, (text_x, text_y_play))
+        screen.blit(text_quit, (text_x, text_y_quit))
+        clock.tick(FPS)
+        pygame.display.flip()
+
+
+def restart_window():
+    screen.fill(BLACK)
+    color_restart = BUTTON_COLOR
+    color_back = BUTTON_COLOR
+    font = pygame.font.Font(None, 150)
+    text_restart = font.render("Restart", True, color_restart)
+    text_back = font.render("Back to menu", True, color_back)
+    text_x_restart = WIDTH // 2 - text_restart.get_width() // 2
+    text_x_back = WIDTH // 2 - text_back.get_width() // 2
+    text_y_restart = HEIGHT // 2 - text_restart.get_height() // 2 - HEIGHT // 8
+    text_y_back = HEIGHT // 2 - text_back.get_height() // 2 + HEIGHT // 8
+
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEMOTION:
+                if text_x_restart <= event.pos[0] <= text_x_restart + text_restart.get_width() and \
+                        text_y_restart <= event.pos[1] <= text_y_restart + text_restart.get_height():
+                    color_restart = ACTIVE_COLOR
+                else:
+                    color_restart = BUTTON_COLOR
+                if text_x_back <= event.pos[0] <= text_x_back + text_back.get_width() and \
+                        text_y_back <= event.pos[1] <= text_y_back + text_back.get_height():
+                    color_back = ACTIVE_COLOR
+                else:
+                    color_back = BUTTON_COLOR
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if text_x_restart <= event.pos[0] <= text_x_restart + text_restart.get_width() and\
+                        text_y_restart <= event.pos[1] <= text_y_restart + text_restart.get_height():
+                    return
+                if text_x_back <= event.pos[0] <= text_x_back + text_back.get_width() and \
+                        text_y_back <= event.pos[1] <= text_y_back + text_back.get_height():
+                    return start_window()
+
+        text_restart = font.render("Restart", True, color_restart)
+        text_back = font.render("Back to menu", True, color_back)
+        screen.blit(text_restart, (text_x_restart, text_y_restart))
+        screen.blit(text_back, (text_x_back, text_y_back))
+        clock.tick(FPS)
+        pygame.display.flip()
+
+
+def game_over():
+    img = load_image('gameover.jpg')
+    x = WIDTH // 2 - img.get_width() // 2
+    y = HEIGHT // 2 - img.get_height() // 2
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+            if event.type == pygame.MOUSEBUTTONDOWN or\
+                    event.type == pygame.KEYDOWN:
+                return
+        screen.fill(BLACK)
+        screen.blit(img, (x, y))
+        pygame.display.flip()
+
+
+# start_window()
+
+
 class Question(pygame.sprite.Sprite):
     def __init__(self, s_x, s_y, *group):
         super().__init__(*group)
@@ -31,10 +139,9 @@ class Level(pygame.sprite.Sprite):
 
         self.image = pygame.transform.scale(load_image(image, 'data'), (WIDTH // 30, WIDTH // 30))
         self.rect = pygame.rect.Rect(0, 0, *self.image.get_size())
-
+        self.default_parameters = (pers_x, pers_y, map_name)
         self.running = True
-        self.alp = 0
-        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png', 'data'))
+        self.pers = Hero(pers_x, pers_y, pers_sprites, load_image('pers.png'), 5, 2, Weapon())
         self.tiles = load_level(map_name)
         self.end_of_level = self.tiles.width * TILE_WIDTH
         self.height_of_level = self.tiles.height * TILE_HEIGHT
@@ -45,8 +152,8 @@ class Level(pygame.sprite.Sprite):
         self.enemies = []
         for i in range(1):
             self.enemies.append(
-                Enemy(enemies_sprites, load_image('pers.png', 'data'), (self.end_of_level, self.height_of_level)))
-        self.interface = InfoInterface(load_image('coin.png', 'data'))
+                Enemy(enemies_sprites, load_image('pirat.png'), 5, 2, (self.end_of_level, self.height_of_level)))
+        self.interface = InfoInterface(load_image('coin.png'))
 
         self.ready = ready
         self.passed = False
@@ -75,8 +182,7 @@ class Level(pygame.sprite.Sprite):
                         self.stop_run()
                     # для теста пуль
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if len(bullet_sprites) < 10:
-                        Bullet(self.pers.rect.x + self.pers.rect.width // 2, self.pers.rect.y, *event.pos)
+                    self.pers.kick(event.pos)
                 if event.type == pygame.KEYUP:
                     # d up
                     if event.key == pygame.K_d:
@@ -101,7 +207,11 @@ class Level(pygame.sprite.Sprite):
             clock.tick(FPS)
             self.interface.update_info(self.pers.health, self.pers.coins_count)
             self.pers.run()
-            all_sprites_lbl.update(self.pers)
+            # all_sprites_lbl.update(self.pers)
+            if self.pers.game_over:
+                game_over()
+                restart_window()
+                self.restart_level()
             self.drawing()
             pygame.display.flip()
 
@@ -130,6 +240,12 @@ class Level(pygame.sprite.Sprite):
         if self.camera.cam_on:
             self.interface.update((self.pers.rect.x, self.pers.rect.y))
         interface_sprite.draw(screen)
+
+    def restart_level(self):
+        for group in SPRITE_GROUPS:
+            for item in group:
+                item.kill()
+        self.__init__(*self.default_parameters)
 
     def stop_run(self):
         font1 = pygame.font.Font(None, 50 * int(HEIGHT * WIDTH / (1366 * 768)))
