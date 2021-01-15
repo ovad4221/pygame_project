@@ -102,7 +102,7 @@ class Level(pygame.sprite.Sprite):
         self.map_name = map_name
 
         self.sound = pygame.mixer.Sound(os.path.join('sounds', sound))
-        self.max_enemy = randrange(10, 15)
+        self.max_enemy = randrange(*ENEMY_NUMBER)
         self.dead_enemies = 0
         self.ready = ready
         self.passed = False
@@ -179,7 +179,7 @@ class Level(pygame.sprite.Sprite):
             self.drawing()
             pygame.display.flip()
             if self.dead_enemies >= self.max_enemy:
-                self.win = True
+                self.passed = True
                 # окно победы, собранные очки
                 self.stop_level()
                 self.running = False
@@ -196,7 +196,6 @@ class Level(pygame.sprite.Sprite):
                     Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2,
                           (self.logs[0].rect.x, self.logs[0].rect.x + self.end_of_level,
                            self.logs[0].rect.y, self.logs[0].rect.y + self.height_of_level)))
-
 
         pygame.mouse.set_visible(False)
         if self.passed:
