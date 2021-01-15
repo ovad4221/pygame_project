@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 import pytmx
+from random import randrange
 from oop_maybe import *
 from constans import *
 from load_functions import *
@@ -55,7 +56,8 @@ class Level(pygame.sprite.Sprite):
         self.map_name = map_name
 
         self.sound = pygame.mixer.Sound(os.path.join('sounds', sound))
-
+        self.max_enemy = randrange(10, 15)
+        self.dead_enemies = 0
         self.ready = ready
         self.passed = False
         self.win = False
@@ -71,9 +73,9 @@ class Level(pygame.sprite.Sprite):
         self.generate_level(self.tiles)
         # создаем врагов
         self.enemies = []
-        for i in range(1):
+        for i in range(3):
             self.enemies.append(
-                Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2, (self.end_of_level, self.height_of_level)))
+                Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2, (0, self.end_of_level, 0, self.height_of_level)))
         self.interface = InfoInterface(load_image('coin.png', 'data'))
         self.enemy_count = len(enemies_sprites)
 
@@ -132,12 +134,22 @@ class Level(pygame.sprite.Sprite):
                 self.stop_level()
             self.drawing()
             pygame.display.flip()
-            if self.enemy_count == 0:
+            if self.dead_enemies >= self.max_enemy:
                 self.win = True
                 # окно победы, собранные очки
                 self.stop_level()
                 self.running = False
+
             self.enemy_count = len(enemies_sprites)
+
+            self.dead_enemies += 3 - self.enemy_count
+            if self.dead_enemies < self.max_enemy and 3 - self.enemy_count > 0:
+                self.enemies.append(
+                    Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2,
+                          (self.logs[0].rect.x, self.logs[0].rect.x + self.end_of_level,
+                           self.logs[0].rect.y, self.logs[0].rect.y + self.height_of_level)))
+
+            print(len(enemies_sprites))
         pygame.mouse.set_visible(False)
         self.passed = True
         return self.pers.coins_count
@@ -149,9 +161,11 @@ class Level(pygame.sprite.Sprite):
                 image = level.get_tile_image(x, y, 0)
                 if image:
                     id = level.tiledgidmap[level.get_tile_gid(x, y, 0)]
-                    if id == 1:
+                    if id in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14]:
                         self.logs.append(Log(x, y, image, id))
-                    elif id == 2:
+                    elif id == 13:
+                        Water(x, y, image, id)
+                    elif id == 15:
                         Coin(x, y, image)
         return x, y
 

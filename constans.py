@@ -14,9 +14,10 @@ coins_sprites = pygame.sprite.Group()
 interface_sprite = pygame.sprite.Group()
 bullet_sprites = pygame.sprite.Group()
 health_scale_sprites = pygame.sprite.Group()
+water_sprites = pygame.sprite.Group()
 SPRITE_GROUPS = [all_sprites_lbl, pers_sprites, logs_sprites,
                  enemies_sprites, coins_sprites, interface_sprite,
-                 bullet_sprites, health_scale_sprites]
+                 bullet_sprites, health_scale_sprites, water_sprites]
 
 # size
 TILE_WIDTH = 50

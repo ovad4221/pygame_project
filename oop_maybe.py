@@ -99,6 +99,18 @@ class Log(pygame.sprite.Sprite):
             TILE_WIDTH * pos_x, TILE_HEIGHT * pos_y)
 
 
+class Water(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y, image, tile_type=1):
+        super().__init__(water_sprites, all_sprites_lbl)
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.tile_type = tile_type
+        self.image = image
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect().move(
+            TILE_WIDTH * pos_x, TILE_HEIGHT * pos_y)
+
+
 class Coin(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, image):
         super().__init__(coins_sprites, all_sprites_lbl)
@@ -124,7 +136,7 @@ class Hero(Person):
     def kick(self, pos):
         self.weapon.kick(self, pos)
 
-# изменил немного реализацию бега и прыжков, так как способ со временем не роботает со спрайтами (хз почему)
+# изменил немного реализацию бега и прыжков
 # теперь на каждый кадр перс смещается на self.speed пиксилей
     def run(self):
         if not self.dead:
@@ -154,12 +166,14 @@ class Enemy(Person):
     def __init__(self, group, sheet, columns, rows, level_size):
         super().__init__(group, sheet, columns, rows)
         self.damage = 10
-        width = level_size[0]
-        height = level_size[1]
+        x1 = level_size[0]
+        x2 = level_size[1]
+        y1 = level_size[2]
+        y2 = level_size[3]
         self.rect = self.image.get_rect()
         self.new = True
-        self.rect.x = random.randrange(width - self.rect.width)
-        self.rect.y = random.randrange(height - self.rect.height)
+        self.rect.x = random.randrange(x1 + 100, x2 - 100)
+        self.rect.y = random.randrange(y1 + 100, y2 - 100)
         self.mask = pygame.mask.from_surface(self.image)
         while self.new and len(group) > 0:
             if (not any([pygame.sprite.collide_mask(self, i) for i in group if i != self])) and\
@@ -167,8 +181,8 @@ class Enemy(Person):
                     (not any([pygame.sprite.collide_mask(self, i) for i in logs_sprites])):
                 self.new = False
             else:
-                self.rect.x = random.randrange(width - self.rect.width)
-                self.rect.y = random.randrange(height - self.rect.height)
+                self.rect.x = random.randrange(x1 + 100, x2 - 100)
+                self.rect.y = random.randrange(y1 + 100, y2 - 100)
                 self.mask = pygame.mask.from_surface(self.image)
         self.speed = random.randrange(1, 3)
         self.habitat = self.rect.x
@@ -228,6 +242,7 @@ class Enemy(Person):
 
         if self.dead and self.time > 500:
             self.kill()
+
         self.new_frame()
 
     def attack(self, target):
