@@ -24,7 +24,6 @@ class Roles:
         self.font = pygame.font.Font(None, 100)
 
     def print_rules(self):
-        print(self.count_of_coins)
         self.coin_count = self.font.render(f"{self.count_of_coins}", True, (255, 100, 100))
         pygame.draw.rect(self.screen2, 'black', (
             self.image_coin.get_width(), 0, self.screen2.get_width() - self.image_coin.get_width(),
