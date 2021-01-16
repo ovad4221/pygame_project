@@ -102,13 +102,13 @@ class Level(pygame.sprite.Sprite):
         self.map_name = map_name
 
         self.sound = pygame.mixer.Sound(os.path.join('sounds', sound))
-        self.max_enemy = randrange(*ENEMY_NUMBER)
-        self.dead_enemies = 0
         self.ready = ready
         self.passed = False
         self.win = False
 
     def create(self):
+        self.max_enemy = randrange(*ENEMY_NUMBER)
+        self.dead_enemies = 0
         self.running = True
         self.pers = Hero(self.pers_x, self.pers_y, pers_sprites, load_image('pers.png', 'data'), 5, 2, Weapon())
         self.tiles = load_level(self.map_name)
@@ -191,12 +191,13 @@ class Level(pygame.sprite.Sprite):
             self.enemy_count = len(enemies_sprites)
 
             self.dead_enemies += MAX_ENEMIES_ALIVE - self.enemy_count
-            if self.dead_enemies < self.max_enemy and MAX_ENEMIES_ALIVE - self.enemy_count > 0:
+            if self.dead_enemies < self.max_enemy and MAX_ENEMIES_ALIVE - self.enemy_count > 0 and self.running:
                 self.enemies.append(
                     Enemy(enemies_sprites, load_image('pirat.png', 'data'), 5, 2,
                           (self.logs[0].rect.x, self.logs[0].rect.x + self.end_of_level,
                            self.logs[0].rect.y, self.logs[0].rect.y + self.height_of_level)))
 
+            print(len(enemies_sprites))
         pygame.mouse.set_visible(False)
         if self.passed:
             win_window(screen, self.pers.coins_count, max_coin)
