@@ -197,7 +197,6 @@ class Level(pygame.sprite.Sprite):
                           (self.logs[0].rect.x, self.logs[0].rect.x + self.end_of_level,
                            self.logs[0].rect.y, self.logs[0].rect.y + self.height_of_level)))
 
-            print(len(enemies_sprites))
         pygame.mouse.set_visible(False)
         if self.passed:
             win_window(screen, self.pers.coins_count, max_coin)
