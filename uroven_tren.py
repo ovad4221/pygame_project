@@ -127,7 +127,9 @@ class Level(pygame.sprite.Sprite):
 
     def run(self):
         max_coin = len(coins_sprites)
-        pygame.mouse.set_visible(True)
+        mouse = pygame.transform.scale(load_image('target.png', 'data'), (20, 20))
+        x_m = 0
+        y_m = 0
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -144,13 +146,15 @@ class Level(pygame.sprite.Sprite):
                         self.pers.jump()
                     # s down
                     if event.key == pygame.K_s:
-                        self.pers.g += 0.01
+                        self.pers.g += 2
                     # esc - остановка уровня
                     if event.key == pygame.K_ESCAPE:
                         self.stop_run()
                     # для теста пуль
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.pers.kick(event.pos)
+                elif event.type == pygame.MOUSEMOTION:
+                    x_m, y_m = event.pos
                 elif event.type == pygame.KEYUP:
                     # d up
                     if event.key == pygame.K_d:
@@ -160,7 +164,7 @@ class Level(pygame.sprite.Sprite):
                         self.pers.left_run = False
                     # s up
                     if event.key == pygame.K_s:
-                        self.pers.g -= 0.01
+                        self.pers.g -= 2
             # условия работы камеры
             if not self.camera.cam_on and WIDTH // 2 < self.pers.rect.x:
                 self.camera.cam_on = True
@@ -177,6 +181,8 @@ class Level(pygame.sprite.Sprite):
             self.pers.run()
             all_sprites_lbl.update(self.pers)
             self.drawing()
+            if pygame.mouse.get_focused():
+                screen.blit(mouse, (x_m, y_m))
             pygame.display.flip()
             if self.dead_enemies >= self.max_enemy:
                 self.passed = True
@@ -197,7 +203,6 @@ class Level(pygame.sprite.Sprite):
                           (self.logs[0].rect.x, self.logs[0].rect.x + self.end_of_level,
                            self.logs[0].rect.y, self.logs[0].rect.y + self.height_of_level)))
 
-        pygame.mouse.set_visible(False)
         if self.passed:
             win_window(screen, self.pers.coins_count, max_coin)
             return self.pers.coins_count

@@ -118,6 +118,8 @@ if __name__ == '__main__':
     board.render(screen)
     for i in level_sprites:
         all_sprites.add(i)
+    for i in shop_sprite:
+        all_sprites.add(i)
     all_sprites.add(board.pers)
     Barier(board.left, board.top, board.w_n * board.cell_size, board.h_n * board.cell_size, False, False, all_sprites,
            bar_sprites)
@@ -136,6 +138,7 @@ if __name__ == '__main__':
     pygame.mixer.music.play(-1)
     channel1 = pygame.mixer.Channel(0)
     channel2 = pygame.mixer.Channel(1)
+    channel3 = pygame.mixer.Channel(2)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -165,14 +168,11 @@ if __name__ == '__main__':
         for sprite in all_sprites:
             camera.apply(sprite)
         level = board.pers.level_collide()
-
+        shop = board.pers.shop_collide()
         if level:
             if pygame.mixer.music.get_busy():
                 pygame.mixer.music.pause()
-                channel1.play(level.sound, loops=1)
-            if pygame.mixer.music.get_busy():
-                pygame.mixer.music.pause()
-                channel1.play(level.sound, loops=1)
+                channel1.play(level.sound, loops=-1)
             if pygame.key.get_pressed()[pygame.K_p] and level.ready and not level.passed:
                 level.create()
                 rules.count_of_coins += level.run()
@@ -183,11 +183,23 @@ if __name__ == '__main__':
         else:
             if channel1.get_busy():
                 channel1.stop()
-            if not pygame.mixer.music.get_busy():
                 pygame.mixer.music.unpause()
 
         board.render(screen)
         all_sprites.draw(screen)
+
+        if shop:
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.pause()
+                channel3.play(shop.sound, loops=-1)
+            if pygame.key.get_pressed()[pygame.K_p]:
+                rules.coin_count = shop.run(screen, rules.coin_count)
+                board.pers.all_flags_move_false()
+        else:
+            if channel3.get_busy():
+                channel3.stop()
+                pygame.mixer.music.unpause()
+
         screen.blit(rules.print_rules(), (WIDTH // 60, HEIGHT // 60))
 
         if sum([i.passed for i in level_sprites]) == len(level_sprites):

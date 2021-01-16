@@ -1,8 +1,11 @@
-from ctypes import windll
 import pygame
+import tkinter as tk
 
-WIDTH = windll.user32.GetSystemMetrics(0)
-HEIGHT = windll.user32.GetSystemMetrics(1)
+root = tk.Tk()
+
+WIDTH = root.winfo_screenwidth()
+HEIGHT = root.winfo_screenheight()
+
 FPS = 100
 
 # sprite groups

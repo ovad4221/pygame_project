@@ -7,22 +7,86 @@ import json
 
 
 class Shop(pygame.sprite.Sprite):
-    def __init__(self, x, y, *group):
+    def __init__(self, *group):
         super().__init__(*group)
-        self.image = pygame.transform.scale(load_image('shop_and_home.jpg', 'data'), (WIDTH // 20, WIDTH // 20))
-        self.rect = pygame.rect.Rect(x, y, *self.image.get_size())
+        self.image = pygame.transform.scale(load_image('shop_and_home.jpg', 'data_menu'), (WIDTH // 20, WIDTH // 20))
+        self.rect = pygame.rect.Rect(0, 0, *self.image.get_size())
 
+        self.ri_arrow = pygame.transform.scale(load_image('стрелка в право.png', 'data_menu'),
+                                               (WIDTH // 20, WIDTH // 20))
+        self.le_arrow = pygame.transform.flip(pygame.transform.scale(load_image('стрелка в право.png', 'data_menu'),
+                                                                     (WIDTH // 20, WIDTH // 20)), True, False)
+        image_coin = load_image('coin.png', 'data')
 
-    def run(self):
-        run = True
-        while run:
+        self.sound = pygame.mixer.Sound(os.path.join('sounds', 'распродажа.wav'))
+        self.sound.set_volume(0.5)
+
+        self.font = pygame.font.Font(None, 30)
+
+        self.dict_of_num_skins = {1: {'open': True, 'prise': -1, 'img': [load_image(f'boat_diri1.png', 'data_menu'),
+                                                                         load_image(f'horse_diri1.png',
+                                                                                    'data_menu')]},
+                                  3: {'open': False, 'prise': 50, 'img': [load_image(f'boat_diri3.png', 'data_menu'),
+                                                                          load_image(f'horse_diri1.png',
+                                                                                     'data_menu')]}}
+        self.now_skin = 1
+        self.screen2 = pygame.Surface([WIDTH // 2, HEIGHT // 2])
+        self.screen2.fill('black')
+        self.screen2.blit(self.le_arrow, (0, self.screen2.get_height() // 2 - self.le_arrow.get_height() // 2))
+        self.screen2.blit(self.ri_arrow, (self.screen2.get_width() - self.le_arrow.get_width(),
+                                          self.screen2.get_height() // 2 - self.le_arrow.get_height() // 2))
+        self.screen2.blit(image_coin, (self.screen2.get_width() // 3, 0))
+
+    def run(self, screen, coin_count):
+        text = self.font.render(f'{coin_count}', True, (255, 204, 0))
+        text_btn = self.font.render('надеть', True, (255, 204, 0))
+        while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        run = False
+                        return coin_count
+                    elif event.type == pygame.MOUSEBUTTONDOWN:
+                        if WIDTH // 2 - self.screen2.get_width() // 2 <= event.pos[0] <= WIDTH // 2 - \
+                                self.screen2.get_width() // 2 + self.le_arrow.get_width() and \
+                                HEIGHT // 2 - self.screen2.get_height() // 2 <= event.pos[1] <= HEIGHT // 2 - \
+                                self.screen2.get_height() // 2 + self.screen2.get_height():
+                            if self.now_skin == 3:
+                                self.now_skin -= 2
+                        elif WIDTH // 2 - self.screen2.get_width() // 2 + self.screen2.get_width() - \
+                                self.le_arrow.get_width() <= event.pos[0] <= WIDTH // 2 - \
+                                self.screen2.get_width() // 2 + self.ri_arrow.get_width() + self.screen2.get_width() - \
+                                self.le_arrow.get_width() and \
+                                HEIGHT // 2 - self.screen2.get_height() // 2 <= event.pos[1] <= HEIGHT // 2 - \
+                                self.screen2.get_height() // 2 + self.screen2.get_height():
+                            if self.now_skin == 1:
+                                self.now_skin += 2
 
+                        pygame.draw.rect(self.screen2, (30, 255, 30),
+                                         (self.screen2.get_width() // 2 - text_btn.get_width() // 2,
+                                          self.screen2.get_height() - text_btn.get_height(),
+                                          *text_btn.get_size()))
 
+                        self.screen2.blit(text_btn, (self.screen2.get_width() // 2 - text_btn.get_width() // 2,
+                                                     self.screen2.get_height() - text_btn.get_height()))
 
+                        self.screen2.blit(self.dict_of_num_skins[self.now_skin]['img'][0], (
+                            self.screen2.get_width() // 2 - self.dict_of_num_skins[self.now_skin]['img'][
+                                0].get_width() // 2,
+                            self.screen2.get_height() // 6))
+                        self.screen2.blit(self.dict_of_num_skins[self.now_skin]['img'][1], (
+                            self.screen2.get_width() // 2 - self.dict_of_num_skins[self.now_skin]['img'][
+                                0].get_width() // 2,
+                            self.screen2.get_height() // 6 + self.dict_of_num_skins[self.now_skin]['img'][
+                                0].get_height()))
+                        pygame.draw.rect(self.screen2, 'black',
+                                         (self.screen2.get_width() * 2 // 3, self.screen2.get_height() // 50,
+                                          *text.get_size()))
+                        self.screen2.blit(text, (self.screen2.get_width() * 2 // 3, self.screen2.get_height() // 50))
+                        text = self.font.render(f'{coin_count}', True, (255, 204, 0))
+
+                        screen.blit(self.screen2,
+                                    (WIDTH // 2 - self.screen2.get_width() // 2,
+                                     HEIGHT // 2 - self.screen2.get_height() // 2))
 
 
 class Barier(pygame.sprite.Sprite):
@@ -181,6 +245,9 @@ class WarShipOrPig(pygame.sprite.Sprite):
     def level_collide(self):
         return pygame.sprite.spritecollideany(self, level_sprites)
 
+    def shop_collide(self):
+        return pygame.sprite.spritecollideany(self, shop_sprite)
+
     def all_flags_move_false(self):
         self.left_run = False
         self.right_run = False
@@ -285,6 +352,8 @@ class Board:
         read_list = json.loads(read_list)
         self.level_list = [Level(int(i[0]), int(i[1]), i[2], i[3], i[4], level_sprites, ready=i[5]) for i in read_list]
 
+        self.shop = Shop(shop_sprite)
+
         self.left = 0
         self.top = 0
 
@@ -323,6 +392,10 @@ class Board:
                 elif self.board[i][j].isdigit():
                     self.level_list[int(self.board[i][j]) - 1].rect.x = x
                     self.level_list[int(self.board[i][j]) - 1].rect.y = y
+                    self.board[i][j] = '+'
+                elif self.board[i][j] == 'S':
+                    self.shop.rect.x = x
+                    self.shop.rect.y = y
                     self.board[i][j] = '+'
                 elif self.board[i][j] == '#':
                     Ground(x, y, self.pesok, all_sprites, ground_sprites)
