@@ -24,6 +24,7 @@ class Roles:
         self.font = pygame.font.Font(None, 100)
 
     def print_rules(self):
+        print(self.count_of_coins)
         self.coin_count = self.font.render(f"{self.count_of_coins}", True, (255, 100, 100))
         pygame.draw.rect(self.screen2, 'black', (
             self.image_coin.get_width(), 0, self.screen2.get_width() - self.image_coin.get_width(),
@@ -53,10 +54,10 @@ class NameOfGame(pygame.sprite.Sprite):
                     frame_location, self.rect.size)))
 
     def update(self):
-        if not self.change % 100:
+        if not self.change % 50:
             self.cur_frame = (self.cur_frame + 1) % len(self.frames)
             self.image = self.frames[self.cur_frame]
-        self.change = (self.change + 1) % 100
+        self.change = (self.change + 1) % 50
 
 
 def start_window():
@@ -193,7 +194,9 @@ if __name__ == '__main__':
                 pygame.mixer.music.pause()
                 channel3.play(shop.sound, loops=-1)
             if pygame.key.get_pressed()[pygame.K_p]:
-                rules.coin_count = shop.run(screen, rules.coin_count)
+                rules.count_of_coins = shop.run(WIDTH // 2 - shop.screen2.get_width() // 2,
+                         HEIGHT // 2 - shop.screen2.get_height() // 2, screen, rules.count_of_coins)
+                board.pers.re_list(board.cell_size)
                 board.pers.all_flags_move_false()
         else:
             if channel3.get_busy():

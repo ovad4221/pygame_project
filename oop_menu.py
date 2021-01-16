@@ -5,6 +5,8 @@ from uroven_tren import Level
 import os
 import json
 
+skin_number = 1
+
 
 class Shop(pygame.sprite.Sprite):
     def __init__(self, *group):
@@ -13,80 +15,125 @@ class Shop(pygame.sprite.Sprite):
         self.rect = pygame.rect.Rect(0, 0, *self.image.get_size())
 
         self.ri_arrow = pygame.transform.scale(load_image('стрелка в право.png', 'data_menu'),
-                                               (WIDTH // 20, WIDTH // 20))
+                                               (WIDTH // 10, WIDTH // 20))
         self.le_arrow = pygame.transform.flip(pygame.transform.scale(load_image('стрелка в право.png', 'data_menu'),
-                                                                     (WIDTH // 20, WIDTH // 20)), True, False)
+                                                                     (WIDTH // 10, WIDTH // 20)), True, False)
         image_coin = load_image('coin.png', 'data')
 
         self.sound = pygame.mixer.Sound(os.path.join('sounds', 'распродажа.wav'))
         self.sound.set_volume(0.5)
 
-        self.font = pygame.font.Font(None, 30)
+        self.font2 = pygame.font.Font(None, 50)
+        self.font1 = pygame.font.Font(None, 150)
 
-        self.dict_of_num_skins = {1: {'open': True, 'prise': -1, 'img': [load_image(f'boat_diri1.png', 'data_menu'),
-                                                                         load_image(f'horse_diri1.png',
-                                                                                    'data_menu')]},
-                                  3: {'open': False, 'prise': 50, 'img': [load_image(f'boat_diri3.png', 'data_menu'),
-                                                                          load_image(f'horse_diri1.png',
-                                                                                     'data_menu')]}}
-        self.now_skin = 1
+        self.now_skin = skin_number
         self.screen2 = pygame.Surface([WIDTH // 2, HEIGHT // 2])
         self.screen2.fill('black')
+
+        self.dict_of_num_skins = {1: {'open': True, 'price': -1, 'name': 'классика', 'img': [
+            pygame.transform.scale(load_image(f'boat_diri1.png', 'data_menu'),
+                                   (self.screen2.get_width() // 6, self.screen2.get_width() // 6)),
+            pygame.transform.scale(load_image(f'horse_diri1.png', 'data_menu'),
+                                   (self.screen2.get_width() // 6, self.screen2.get_width() // 6))]},
+                                  3: {'open': False, 'price': 50, 'name': 'цветок', 'img': [
+                                      pygame.transform.scale(load_image(f'boat_diri3.png', 'data_menu'), (
+                                          self.screen2.get_width() // 6, self.screen2.get_width() // 6)),
+                                      pygame.transform.scale(load_image(f'horse_diri3.png', 'data_menu'), (
+                                          self.screen2.get_width() // 6, self.screen2.get_width() // 6))]}}
+
         self.screen2.blit(self.le_arrow, (0, self.screen2.get_height() // 2 - self.le_arrow.get_height() // 2))
         self.screen2.blit(self.ri_arrow, (self.screen2.get_width() - self.le_arrow.get_width(),
                                           self.screen2.get_height() // 2 - self.le_arrow.get_height() // 2))
         self.screen2.blit(image_coin, (self.screen2.get_width() // 3, 0))
 
-    def run(self, screen, coin_count):
-        text = self.font.render(f'{coin_count}', True, (255, 204, 0))
-        text_btn = self.font.render('надеть', True, (255, 204, 0))
+    def run(self, x_s, y_s, screen, coin_count):
+        coin_count = coin_count
+        global skin_number
+        text = self.font2.render(f'{coin_count}', True, (255, 204, 0))
+        text_btn = self.font1.render('надеть', True, (10, 10, 10))
+        name_skin = self.font2.render(f'{self.dict_of_num_skins[self.now_skin]["name"]}', True, (200, 140, 180))
+        pygame.mouse.set_visible(True)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
+                        pygame.mouse.set_visible(False)
                         return coin_count
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
-                        if WIDTH // 2 - self.screen2.get_width() // 2 <= event.pos[0] <= WIDTH // 2 - \
-                                self.screen2.get_width() // 2 + self.le_arrow.get_width() and \
-                                HEIGHT // 2 - self.screen2.get_height() // 2 <= event.pos[1] <= HEIGHT // 2 - \
-                                self.screen2.get_height() // 2 + self.screen2.get_height():
-                            if self.now_skin == 3:
-                                self.now_skin -= 2
-                        elif WIDTH // 2 - self.screen2.get_width() // 2 + self.screen2.get_width() - \
-                                self.le_arrow.get_width() <= event.pos[0] <= WIDTH // 2 - \
-                                self.screen2.get_width() // 2 + self.ri_arrow.get_width() + self.screen2.get_width() - \
-                                self.le_arrow.get_width() and \
-                                HEIGHT // 2 - self.screen2.get_height() // 2 <= event.pos[1] <= HEIGHT // 2 - \
-                                self.screen2.get_height() // 2 + self.screen2.get_height():
-                            if self.now_skin == 1:
-                                self.now_skin += 2
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    x, y = event.pos
+                    if x_s <= x <= x_s + self.le_arrow.get_height() and y_s <= y <= y_s + self.screen2.get_height():
+                        if self.now_skin == 3:
+                            self.now_skin = 1
+                    elif x_s + self.screen2.get_width() - self.ri_arrow.get_width() <= x <= x_s + \
+                            self.le_arrow.get_height() + self.screen2.get_width() and \
+                            y_s <= y <= y_s + self.screen2.get_height():
+                        if self.now_skin == 1:
+                            self.now_skin = 3
+                    elif x_s + self.screen2.get_width() // 2 - text_btn.get_width() // 2 <= x <= x_s + \
+                            self.screen2.get_width() // 2 - text_btn.get_width() // 2 + text_btn.get_width() and \
+                            y_s + self.screen2.get_height() - text_btn.get_height() <= y <= y_s + \
+                            self.screen2.get_height() - text_btn.get_height() + text_btn.get_height():
+                        if self.dict_of_num_skins[self.now_skin]['open']:
+                            skin_number = self.now_skin
+                        else:
+                            if coin_count >= self.dict_of_num_skins[self.now_skin]['price']:
+                                coin_count -= self.dict_of_num_skins[self.now_skin]['price']
+                                self.dict_of_num_skins[self.now_skin]['open'] = True
 
-                        pygame.draw.rect(self.screen2, (30, 255, 30),
-                                         (self.screen2.get_width() // 2 - text_btn.get_width() // 2,
-                                          self.screen2.get_height() - text_btn.get_height(),
-                                          *text_btn.get_size()))
+            # повторения
+            if self.dict_of_num_skins[self.now_skin]['open']:
+                text_btn = self.font1.render('надеть', True, (10, 10, 10))
+            else:
+                text_btn = self.font1.render('купить', True, (10, 10, 10))
 
-                        self.screen2.blit(text_btn, (self.screen2.get_width() // 2 - text_btn.get_width() // 2,
-                                                     self.screen2.get_height() - text_btn.get_height()))
+            self.screen2.blit(name_skin, (
+                self.screen2.get_width() // 2 - name_skin.get_width() // 2, self.screen2.get_height() // 10))
 
-                        self.screen2.blit(self.dict_of_num_skins[self.now_skin]['img'][0], (
-                            self.screen2.get_width() // 2 - self.dict_of_num_skins[self.now_skin]['img'][
-                                0].get_width() // 2,
-                            self.screen2.get_height() // 6))
-                        self.screen2.blit(self.dict_of_num_skins[self.now_skin]['img'][1], (
-                            self.screen2.get_width() // 2 - self.dict_of_num_skins[self.now_skin]['img'][
-                                0].get_width() // 2,
-                            self.screen2.get_height() // 6 + self.dict_of_num_skins[self.now_skin]['img'][
-                                0].get_height()))
-                        pygame.draw.rect(self.screen2, 'black',
-                                         (self.screen2.get_width() * 2 // 3, self.screen2.get_height() // 50,
-                                          *text.get_size()))
-                        self.screen2.blit(text, (self.screen2.get_width() * 2 // 3, self.screen2.get_height() // 50))
-                        text = self.font.render(f'{coin_count}', True, (255, 204, 0))
+            self.screen2.blit(text_btn, (self.screen2.get_width() // 2 - text_btn.get_width() // 2,
+                                         self.screen2.get_height() - text_btn.get_height()))
 
-                        screen.blit(self.screen2,
-                                    (WIDTH // 2 - self.screen2.get_width() // 2,
-                                     HEIGHT // 2 - self.screen2.get_height() // 2))
+            self.screen2.blit(self.dict_of_num_skins[self.now_skin]['img'][0], (
+                self.screen2.get_width() // 2 - self.dict_of_num_skins[self.now_skin]['img'][
+                    0].get_width() // 2,
+                self.screen2.get_height() // 6))
+            self.screen2.blit(self.dict_of_num_skins[self.now_skin]['img'][1], (
+                self.screen2.get_width() // 2 - self.dict_of_num_skins[self.now_skin]['img'][
+                    0].get_width() // 2,
+                self.screen2.get_height() // 6 + self.dict_of_num_skins[self.now_skin]['img'][
+                    0].get_height()))
+
+            self.screen2.blit(text, (self.screen2.get_width() * 2 // 3, self.screen2.get_height() // 50))
+
+            text = self.font2.render(f'{coin_count}', True, (255, 204, 0))
+            if self.dict_of_num_skins[self.now_skin]['open']:
+                name_skin = self.font2.render(f'{self.dict_of_num_skins[self.now_skin]["name"]}', True, (200, 140, 180))
+            else:
+                name_skin = self.font2.render(
+                    f'{self.dict_of_num_skins[self.now_skin]["name"]}, ' +
+                    f'стоимость: {self.dict_of_num_skins[self.now_skin]["price"]} P',
+                    True, (200, 140, 180))
+            screen.blit(self.screen2, (x_s, y_s))
+
+            # flip
+            pygame.display.flip()
+
+            pygame.draw.rect(self.screen2, 'black', (
+                self.screen2.get_width() // 4,
+                self.screen2.get_height() // 10, self.screen2.get_width() // 2, name_skin.get_height()))
+
+            pygame.draw.rect(self.screen2, 'black',
+                             (self.screen2.get_width() * 2 // 3, self.screen2.get_height() // 50, *text.get_size()))
+
+            pygame.draw.rect(self.screen2, '#000000',
+                             (self.screen2.get_width() // 2 - self.dict_of_num_skins[self.now_skin]['img'][
+                                 0].get_width() // 2, self.screen2.get_height() // 6,
+                              self.dict_of_num_skins[1]['img'][0].get_width(),
+                              self.dict_of_num_skins[1]['img'][0].get_width() * 2))
+
+            pygame.draw.rect(self.screen2, (100, 200, 100),
+                             (self.screen2.get_width() // 2 - text_btn.get_width() // 2,
+                              self.screen2.get_height() - text_btn.get_height(),
+                              *text_btn.get_size()))
 
 
 class Barier(pygame.sprite.Sprite):
@@ -247,6 +294,90 @@ class WarShipOrPig(pygame.sprite.Sprite):
 
     def shop_collide(self):
         return pygame.sprite.spritecollideany(self, shop_sprite)
+
+    def re_list(self, cell_size):
+        self.im_pictures = [
+            pygame.transform.scale(load_image(f'boat_up{skin_number}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.scale(load_image(f'boat_up{skin_number + 1}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_up{skin_number}.png', 'data_menu'), (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_up{skin_number + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.scale(load_image(f'boat_ri{skin_number}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.scale(load_image(f'boat_ri{skin_number + 1}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_ri{skin_number}.png', 'data_menu'), (cell_size, cell_size)),
+                True,
+                False),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_ri{skin_number + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
+            pygame.transform.scale(load_image(f'horse_ri{skin_number}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.scale(load_image(f'horse_up{skin_number}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_up{skin_number}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_ri{skin_number}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
+
+            pygame.transform.scale(load_image(f'boat_diri{skin_number}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.scale(load_image(f'boat_diri{skin_number + 1}.png', 'data_menu'), (cell_size, cell_size)),
+
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{skin_number}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{skin_number + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
+
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{skin_number}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{skin_number + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
+
+            pygame.transform.flip(pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{skin_number}.png', 'data_menu'),
+                                       (cell_size, cell_size)), False, True), True, False),
+            pygame.transform.flip(pygame.transform.flip(
+                pygame.transform.scale(load_image(f'boat_diri{skin_number + 1}.png', 'data_menu'),
+                                       (cell_size, cell_size)), False, True), True, False),
+
+            pygame.transform.scale(load_image(f'horse_diri{skin_number}.png', 'data_menu'), (cell_size, cell_size)),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_diri{skin_number}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                True,
+                False),
+            pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_diri{skin_number}.png', 'data_menu'),
+                                       (cell_size, cell_size)),
+                False,
+                True),
+            pygame.transform.flip(pygame.transform.flip(
+                pygame.transform.scale(load_image(f'horse_diri{skin_number}.png', 'data_menu'),
+                                       (cell_size, cell_size)), False, True), True, False)]
 
     def all_flags_move_false(self):
         self.left_run = False

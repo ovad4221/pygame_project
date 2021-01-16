@@ -17,7 +17,7 @@ class Person(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.speed = PERS_SPEED
         self.jump_v = 0
-        self.g = 0.05
+        self.g = 0.08
         # jump_count чтобы нельзя было несколько раз подряд прыгать, и для реализации двойных прыжков
         self.jump_count = 0
         self.clock = pygame.time.Clock()
@@ -44,11 +44,6 @@ class Person(pygame.sprite.Sprite):
             if not pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask):
                 self.rect = self.rect.move(0, self.jump_v)
                 self.jump_v += self.g
-                # чтобы не было залипания в верхней точке прыжка увеличиваем ускорение
-                if 0 <= abs(self.jump_v) <= 1:
-                    self.g = 0.5
-                else:
-                    self.g = 0.05
             # если персонаж попал в платформу после прыжка, передвигаем его из нее
             if pygame.sprite.spritecollide(self, logs_sprites, False, pygame.sprite.collide_mask):
                 self.rect = self.rect.move(0, -self.jump_v)

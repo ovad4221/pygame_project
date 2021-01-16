@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 import pytmx
+from time import sleep
 from random import randrange
 from oop_maybe import *
 from constans import *
@@ -146,7 +147,7 @@ class Level(pygame.sprite.Sprite):
                         self.pers.jump()
                     # s down
                     if event.key == pygame.K_s:
-                        self.pers.g += 2
+                        self.pers.g += 1.4
                     # esc - остановка уровня
                     if event.key == pygame.K_ESCAPE:
                         self.stop_run()
@@ -164,7 +165,7 @@ class Level(pygame.sprite.Sprite):
                         self.pers.left_run = False
                     # s up
                     if event.key == pygame.K_s:
-                        self.pers.g -= 2
+                        self.pers.g -= 1.4
             # условия работы камеры
             if not self.camera.cam_on and WIDTH // 2 < self.pers.rect.x:
                 self.camera.cam_on = True
@@ -205,6 +206,7 @@ class Level(pygame.sprite.Sprite):
 
         if self.passed:
             win_window(screen, self.pers.coins_count, max_coin)
+            sleep(1)
             return self.pers.coins_count
         return 0
 
