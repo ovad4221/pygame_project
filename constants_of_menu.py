@@ -13,4 +13,4 @@ bar_sprites = pygame.sprite.Group()
 level_sprites = pygame.sprite.Group()
 name_sprite = pygame.sprite.Group()
 
-skin_number = 1
+skin_number = 3

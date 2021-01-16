@@ -318,7 +318,7 @@ class Board:
                     screen.blit(self.bereg, (x, y))
 
                 elif self.board[i][j] == 'X':
-                    self.pers = WarShipOrPig(x, y, self.cell_size, 1)
+                    self.pers = WarShipOrPig(x, y, self.cell_size)
                     self.board[i][j] = '>'
                 elif self.board[i][j].isdigit():
                     self.level_list[int(self.board[i][j]) - 1].rect.x = x
