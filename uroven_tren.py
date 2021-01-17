@@ -217,8 +217,12 @@ class Level(pygame.sprite.Sprite):
                 image = level.get_tile_image(x, y, 0)
                 if image:
                     id = level.tiledgidmap[level.get_tile_gid(x, y, 0)]
-                    if id in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14]:
+                    if id in [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]:
                         self.logs.append(Log(x, y, image, id))
+                    elif id == 14:
+                        img = pygame.Surface((TILE_WIDTH, TILE_HEIGHT))
+                        img.fill(pygame.Color(BLACK))
+                        self.logs.append(Log(x, y, img, id))
                     elif id == 13:
                         Water(x, y, image, id)
                     elif id == 15:
